@@ -12,6 +12,11 @@ max-width:420px;
 padding:20px;
 }
 
+h1{
+font-size:22px;
+margin-bottom:16px;
+}
+
 #reader{
 width:100%;
 border-radius:12px;
@@ -44,8 +49,24 @@ border-radius:10px;
 box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
 
+.receipt h2{
+font-size:16px;
+margin-bottom:8px;
+}
+
+ul{
+padding-left:16px;
+margin:0;
+}
+
+li{
+font-size:14px;
+margin-bottom:4px;
+}
+
 #totals{
 margin-top:20px;
+font-size:18px;
 font-weight:600;
 }
 

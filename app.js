@@ -3,6 +3,28 @@ let products = []
 let scanner
 let lastBarcode = null
 
+
+async function fetchProductName(barcode){
+
+try{
+
+let res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`)
+
+let data = await res.json()
+
+if(data.status === 1){
+return data.product.product_name || ""
+}
+
+return ""
+
+}catch{
+return ""
+}
+
+}
+
+
 function updateTotals(){
 
 let total = products.reduce((sum,p)=>sum+p.price,0)
@@ -19,7 +41,7 @@ listB.innerHTML = ""
 products.forEach(p=>{
 
 let li = document.createElement("li")
-li.innerText = `${p.barcode} - €${p.price}`
+li.innerText = `${p.name} - €${p.price}`
 
 if(scontrinoA + p.price <= 64){
 
@@ -70,6 +92,7 @@ onScanSuccess
 
 }
 
+
 function stopScanner(){
 
 if(scanner){
@@ -78,11 +101,16 @@ scanner.stop()
 
 }
 
-function onScanSuccess(decodedText){
+
+async function onScanSuccess(decodedText){
 
 lastBarcode = decodedText
 
 stopScanner()
+
+let name = await fetchProductName(decodedText)
+
+document.getElementById("productNameInput").value = name
 
 openSheet()
 
@@ -91,12 +119,14 @@ openSheet()
 
 document.getElementById("savePrice").onclick = () => {
 
+let name = document.getElementById("productNameInput").value || "Prodotto"
 let price = parseFloat(document.getElementById("priceInput").value)
 
 if(!price) return
 
 products.push({
 barcode:lastBarcode,
+name:name,
 price:price
 })
 
