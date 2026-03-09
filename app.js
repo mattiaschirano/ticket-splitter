@@ -10,21 +10,27 @@ const TICKET_VALUE = 8
 
 
 
-/* CACHE */
+/* ---------------- CACHE ---------------- */
 
 function getCache(){
+
 let cache = localStorage.getItem("productCache")
+
 if(!cache) return {}
+
 return JSON.parse(cache)
+
 }
 
 function saveCache(cache){
+
 localStorage.setItem("productCache", JSON.stringify(cache))
+
 }
 
 
 
-/* API */
+/* ---------------- API PRODUCT NAME ---------------- */
 
 async function fetchProductName(barcode){
 
@@ -44,11 +50,20 @@ let data = await res.json()
 
 if(data.status === 1){
 
-let name = data.product.product_name || ""
+let product = data.product
+
+let name =
+product.product_name_it ||
+product.product_name ||
+product.generic_name ||
+product.brands ||
+""
 
 if(name){
+
 cache[barcode] = name
 saveCache(cache)
+
 }
 
 return name
@@ -56,7 +71,7 @@ return name
 }
 
 }catch(e){
-console.log(e)
+console.log("API error", e)
 }
 
 return ""
@@ -65,35 +80,48 @@ return ""
 
 
 
-/* SCANNER */
+/* ---------------- SCANNER ---------------- */
 
 async function startScanner(){
 
-document
-.getElementById("cameraContainer")
-.classList.remove("hidden")
+const camera = document.getElementById("cameraContainer")
+
+camera.classList.remove("hidden")
 
 if(!scanner){
+
 scanner = new Html5Qrcode("reader")
+
 }
 
 if(scannerRunning) return
 
 await scanner.start(
+
 { facingMode:"environment" },
-{ fps:10, qrbox:250 },
+
+{
+fps:10,
+qrbox:250
+},
+
 onScanSuccess
+
 )
 
 scannerRunning = true
 
 }
 
+
+
 async function stopScanner(){
 
 if(scanner && scannerRunning){
+
 await scanner.stop()
 scannerRunning = false
+
 }
 
 document
@@ -104,7 +132,7 @@ document
 
 
 
-/* SCAN SUCCESS */
+/* ---------------- SCAN SUCCESS ---------------- */
 
 async function onScanSuccess(decodedText){
 
@@ -125,35 +153,44 @@ document
 
 
 
-/* SAVE PRODUCT */
+/* ---------------- SAVE PRODUCT ---------------- */
 
 function saveProduct(){
 
 const name =
 document.getElementById("productNameInput").value || "Prodotto"
 
-const price =
-parseFloat(document.getElementById("priceInput").value)
+const priceInput =
+document.getElementById("priceInput").value
 
-if(!price) return
+const price = parseFloat(priceInput)
+
+if(!price){
+
+alert("Inserisci il prezzo")
+return
+
+}
 
 products.push({
+
 barcode:lastBarcode,
 name:name,
 price:price
-})
 
-renderProducts()
+})
 
 document
 .getElementById("priceSheet")
 .classList.remove("active")
 
+renderProducts()
+
 }
 
 
 
-/* RENDER LISTA SPESA */
+/* ---------------- RENDER PRODUCTS ---------------- */
 
 function renderProducts(){
 
@@ -188,7 +225,7 @@ document
 
 
 
-/* SPLIT */
+/* ---------------- SPLIT SHOPPING ---------------- */
 
 function splitShopping(){
 
@@ -201,11 +238,15 @@ let sumB = 0
 products.forEach(p=>{
 
 if(sumA <= sumB){
+
 receiptA.push(p)
 sumA += p.price
+
 }else{
+
 receiptB.push(p)
 sumB += p.price
+
 }
 
 })
@@ -236,7 +277,7 @@ renderReceipts()
 
 
 
-/* RENDER RECEIPTS */
+/* ---------------- RENDER RECEIPTS ---------------- */
 
 function renderReceipts(){
 
@@ -271,11 +312,11 @@ updateSummary()
 
 
 
-/* SUMMARY */
+/* ---------------- SUMMARY ---------------- */
 
 function updateSummary(){
 
-let total = products.reduce((s,p)=>s+p.price,0)
+let total = products.reduce((sum,p)=>sum+p.price,0)
 
 let tickets = Math.floor(total / TICKET_VALUE)
 
@@ -291,7 +332,7 @@ document.getElementById("extraText").innerText =
 
 
 
-/* EVENTS */
+/* ---------------- EVENTS ---------------- */
 
 document.addEventListener("DOMContentLoaded", ()=>{
 
