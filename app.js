@@ -68,6 +68,8 @@ function splitShopping(){
   document.getElementById("tabs").classList.remove("hidden")
   document.getElementById("summaryCard").classList.remove("hidden")
 
+  document.querySelector(".bottom-actions").classList.add("hidden")
+
   renderReceipts()
 }
 
