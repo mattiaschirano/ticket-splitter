@@ -300,26 +300,38 @@ updateSummary()
 
 function updateSummary(){
 
-let activeA =
-document.getElementById("tabA").classList.contains("active")
-
-let receipt = activeA ? receiptA : receiptB
-
+/* totale spesa */
 
 let total =
-receipt.reduce((sum,p)=>sum+p.price,0)
+products.reduce((sum,p)=>sum+p.price,0)
 
+
+/* divisione per persona */
+
+let perPerson =
+total / 2
+
+
+/* ticket per persona */
 
 let tickets =
-Math.floor(total / TICKET_VALUE)
+Math.floor(perPerson / TICKET_VALUE)
 
+
+/* valore coperto dai ticket */
+
+let covered =
+tickets * TICKET_VALUE
+
+
+/* resto da pagare */
 
 let extra =
-total - tickets*TICKET_VALUE
+perPerson - covered
 
 
 document.getElementById("ticketSummary").innerText =
-`€${total.toFixed(2)} · ${tickets} ticket`
+`€${perPerson.toFixed(2)} · ${tickets} ticket`
 
 
 document.getElementById("extraText").innerText =
