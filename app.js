@@ -4,11 +4,14 @@ let lastBarcode = null
 
 let products = []
 
+let receiptA = []
+let receiptB = []
+
+const TICKET_VALUE = 8
 
 
-/* ----------------
-CACHE
----------------- */
+
+/* ---------------- CACHE ---------------- */
 
 function getCache(){
 
@@ -28,9 +31,7 @@ localStorage.setItem("productCache", JSON.stringify(cache))
 
 
 
-/* ----------------
-API PRODUCT NAME
----------------- */
+/* ---------------- API PRODUCT NAME ---------------- */
 
 async function fetchProductName(barcode){
 
@@ -73,9 +74,7 @@ return ""
 
 
 
-/* ----------------
-SCANNER
----------------- */
+/* ---------------- SCANNER ---------------- */
 
 async function startScanner(){
 
@@ -128,9 +127,7 @@ document
 
 
 
-/* ----------------
-SCAN SUCCESS
----------------- */
+/* ---------------- SCAN SUCCESS ---------------- */
 
 async function onScanSuccess(decodedText){
 
@@ -140,25 +137,16 @@ await stopScanner()
 
 const name = await fetchProductName(decodedText)
 
-document
-.getElementById("productNameInput")
-.value = name
+document.getElementById("productNameInput").value = name
+document.getElementById("priceInput").value = ""
 
-document
-.getElementById("priceInput")
-.value = ""
-
-document
-.getElementById("priceSheet")
-.classList.add("active")
+document.getElementById("priceSheet").classList.add("active")
 
 }
 
 
 
-/* ----------------
-SAVE PRODUCT
----------------- */
+/* ---------------- SAVE PRODUCT ---------------- */
 
 function saveProduct(){
 
@@ -171,6 +159,7 @@ parseFloat(document.getElementById("priceInput").value)
 if(!price) return
 
 products.push({
+barcode:lastBarcode,
 name:name,
 price:price
 })
@@ -185,9 +174,7 @@ document
 
 
 
-/* ----------------
-RENDER PRODUCTS
----------------- */
+/* ---------------- RENDER PRODUCTS ---------------- */
 
 function renderProducts(){
 
@@ -210,13 +197,78 @@ list.appendChild(row)
 
 })
 
+if(products.length > 0){
+
+document
+.getElementById("splitBtn")
+.classList.remove("hidden")
+
+}
+
 }
 
 
 
-/* ----------------
-EVENTS
----------------- */
+/* ---------------- SPLIT SHOPPING ---------------- */
+
+function splitShopping(){
+
+receiptA = []
+receiptB = []
+
+let sumA = 0
+let sumB = 0
+
+products.forEach(p=>{
+
+if(sumA <= sumB){
+
+receiptA.push(p)
+sumA += p.price
+
+}else{
+
+receiptB.push(p)
+sumB += p.price
+
+}
+
+})
+
+renderReceipts()
+
+}
+
+
+
+/* ---------------- RENDER RECEIPTS ---------------- */
+
+function renderReceipts(){
+
+const list = document.getElementById("productList")
+
+list.innerHTML = ""
+
+receiptA.forEach(p=>{
+
+const row = document.createElement("div")
+
+row.className = "product-row"
+
+row.innerHTML = `
+<span>${p.name}</span>
+<span>€${p.price.toFixed(2)}</span>
+`
+
+list.appendChild(row)
+
+})
+
+}
+
+
+
+/* ---------------- EVENTS ---------------- */
 
 document.addEventListener("DOMContentLoaded", ()=>{
 
@@ -227,6 +279,10 @@ document
 document
 .getElementById("savePrice")
 .addEventListener("click", saveProduct)
+
+document
+.getElementById("splitBtn")
+.addEventListener("click", splitShopping)
 
 document
 .getElementById("cancelPrice")
