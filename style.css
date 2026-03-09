@@ -55,46 +55,38 @@ display:flex;
 justify-content:space-between;
 padding:14px 0;
 border-bottom:1px solid #eee;
+font-size:16px;
 }
 
 
 /* BOTTONI */
 
 .bottom-actions{
-
 position:fixed;
-
 bottom:20px;
 left:0;
 right:0;
-
 display:flex;
 justify-content:center;
 gap:10px;
-
 }
 
 .scan-button{
-
 background:#0f172a;
 color:white;
-
 padding:16px 28px;
-
 border:none;
 border-radius:30px;
-
 font-size:16px;
-
 }
 
 
-/* TABS */
+/* TAB */
 
 .tabs{
 display:flex;
 gap:8px;
-margin-top:16px;
+margin-top:20px;
 }
 
 .tab{

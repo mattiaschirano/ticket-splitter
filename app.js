@@ -3,7 +3,6 @@ let scannerRunning = false
 let lastBarcode = null
 
 let products = []
-
 let receiptA = []
 let receiptB = []
 
@@ -14,24 +13,32 @@ const TICKET_VALUE = 8
 /* CACHE */
 
 function getCache(){
+
 let cache = localStorage.getItem("productCache")
+
 if(!cache) return {}
+
 return JSON.parse(cache)
+
 }
 
 function saveCache(cache){
+
 localStorage.setItem("productCache", JSON.stringify(cache))
+
 }
 
 
 
-/* PRODUCT NAME API */
+/* API PRODOTTO */
 
 async function fetchProductName(barcode){
 
 let cache = getCache()
 
-if(cache[barcode]) return cache[barcode]
+if(cache[barcode]){
+return cache[barcode]
+}
 
 try{
 
@@ -53,8 +60,10 @@ p.brands ||
 ""
 
 if(name){
+
 cache[barcode] = name
 saveCache(cache)
+
 }
 
 return name
@@ -100,8 +109,10 @@ scannerRunning = true
 async function stopScanner(){
 
 if(scanner && scannerRunning){
+
 await scanner.stop()
 scannerRunning = false
+
 }
 
 document
@@ -161,7 +172,7 @@ renderProducts()
 
 
 
-/* RENDER LISTA */
+/* LISTA SPESA */
 
 function renderProducts(){
 
@@ -192,66 +203,69 @@ document.getElementById("splitBtn").classList.remove("hidden")
 
 
 
-/* OTTIMIZZAZIONE SPLIT */
+/* SPLIT OTTIMIZZATO */
 
 function splitShopping(){
+
+let total =
+products.reduce((sum,p)=>sum+p.price,0)
+
+let target = total / 2
+
+let bestMask = 0
+let bestDiff = Infinity
+
+let n = products.length
+
+
+for(let mask=0; mask < (1<<n); mask++){
+
+let sum = 0
+
+for(let i=0;i<n;i++){
+
+if(mask & (1<<i)){
+sum += products[i].price
+}
+
+}
+
+let diff = Math.abs(target - sum)
+
+if(diff < bestDiff){
+bestDiff = diff
+bestMask = mask
+}
+
+}
+
 
 receiptA = []
 receiptB = []
 
-let sumA = 0
-let sumB = 0
 
+for(let i=0;i<n;i++){
 
-/* ordina prodotti dal più costoso */
-
-let sorted = [...products].sort((a,b)=>b.price-a.price)
-
-
-
-sorted.forEach(p=>{
-
-let newA = sumA + p.price
-let newB = sumB + p.price
-
-
-/* distanza dal multiplo di ticket */
-
-let distA =
-Math.abs((newA % TICKET_VALUE) - TICKET_VALUE)
-
-let distB =
-Math.abs((newB % TICKET_VALUE) - TICKET_VALUE)
-
-
-
-/* scegli il migliore */
-
-if(distA < distB){
-
-receiptA.push(p)
-sumA += p.price
-
+if(bestMask & (1<<i)){
+receiptA.push(products[i])
 }else{
-
-receiptB.push(p)
-sumB += p.price
+receiptB.push(products[i])
+}
 
 }
 
-})
-
 
 document.getElementById("productList").classList.add("hidden")
-
 document.getElementById("tabs").classList.remove("hidden")
-
 document.getElementById("receiptList").classList.remove("hidden")
 
-document.querySelector(".bottom-actions").classList.add("hidden")
+document
+.querySelector(".bottom-actions")
+.classList.add("hidden")
 
-document.getElementById("summaryCard").classList.remove("hidden")
-
+document
+.getElementById("summaryCard")
+.classList.remove("hidden")
 
 renderReceipts()
 
@@ -273,7 +287,6 @@ document.getElementById("tabA")
 
 let receipt = activeA ? receiptA : receiptB
 
-
 receipt.forEach(p=>{
 
 const row = document.createElement("div")
@@ -289,42 +302,26 @@ list.appendChild(row)
 
 })
 
-
 updateSummary()
 
 }
 
 
 
-/* SUMMARY PERSONA */
+/* SUMMARY EQUO */
 
 function updateSummary(){
-
-/* totale spesa */
 
 let total =
 products.reduce((sum,p)=>sum+p.price,0)
 
-
-/* divisione per persona */
-
-let perPerson =
-total / 2
-
-
-/* ticket per persona */
+let perPerson = total / 2
 
 let tickets =
 Math.floor(perPerson / TICKET_VALUE)
 
-
-/* valore coperto dai ticket */
-
 let covered =
 tickets * TICKET_VALUE
-
-
-/* resto da pagare */
 
 let extra =
 perPerson - covered
@@ -332,7 +329,6 @@ perPerson - covered
 
 document.getElementById("ticketSummary").innerText =
 `€${perPerson.toFixed(2)} · ${tickets} ticket`
-
 
 document.getElementById("extraText").innerText =
 `€${extra.toFixed(2)} da pagare tramite carta`
@@ -367,7 +363,6 @@ document
 
 })
 
-
 document
 .getElementById("tabA")
 .addEventListener("click",()=>{
@@ -378,7 +373,6 @@ document.getElementById("tabB").classList.remove("active")
 renderReceipts()
 
 })
-
 
 document
 .getElementById("tabB")
