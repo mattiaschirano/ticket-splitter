@@ -203,46 +203,50 @@ document.getElementById("splitBtn").classList.remove("hidden")
 
 
 
-/* SPLIT OTTIMIZZATO */
+/* SPLIT OTTIMIZZATO PER TICKET */
 
 function splitShopping(){
 
-let total =
-products.reduce((sum,p)=>sum+p.price,0)
-
-let target = total / 2
-
 let bestMask = 0
+let bestScore = -1
 let bestDiff = Infinity
 
 let n = products.length
 
-
 for(let mask=0; mask < (1<<n); mask++){
 
-let sum = 0
+let sumA = 0
+let sumB = 0
 
 for(let i=0;i<n;i++){
 
 if(mask & (1<<i)){
-sum += products[i].price
+sumA += products[i].price
+}else{
+sumB += products[i].price
 }
 
 }
 
-let diff = Math.abs(target - sum)
+let ticketsA = Math.floor(sumA / TICKET_VALUE)
+let ticketsB = Math.floor(sumB / TICKET_VALUE)
 
-if(diff < bestDiff){
+let score = ticketsA + ticketsB
+let diff = Math.abs(sumA - sumB)
+
+if(
+score > bestScore ||
+(score === bestScore && diff < bestDiff)
+){
+bestScore = score
 bestDiff = diff
 bestMask = mask
 }
 
 }
 
-
 receiptA = []
 receiptB = []
-
 
 for(let i=0;i<n;i++){
 
@@ -253,7 +257,6 @@ receiptB.push(products[i])
 }
 
 }
-
 
 document.getElementById("productList").classList.add("hidden")
 document.getElementById("tabs").classList.remove("hidden")
@@ -308,30 +311,30 @@ updateSummary()
 
 
 
-/* SUMMARY EQUO */
+/* SUMMARY CON RESTO DIVISO */
 
 function updateSummary(){
 
 let total =
 products.reduce((sum,p)=>sum+p.price,0)
 
-let perPerson = total / 2
-
-let tickets =
-Math.floor(perPerson / TICKET_VALUE)
+let totalTickets =
+Math.floor(total / TICKET_VALUE)
 
 let covered =
-tickets * TICKET_VALUE
+totalTickets * TICKET_VALUE
 
 let extra =
-perPerson - covered
+total - covered
 
+let extraPerPerson =
+extra / 2
 
 document.getElementById("ticketSummary").innerText =
-`€${perPerson.toFixed(2)} · ${tickets} ticket`
+`${totalTickets} ticket usati`
 
 document.getElementById("extraText").innerText =
-`€${extra.toFixed(2)} da pagare tramite carta`
+`€${extraPerPerson.toFixed(2)} da pagare a testa`
 
 }
 
