@@ -1,5 +1,5 @@
 body{
-font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;
 margin:0;
 background:#f3f3f3;
 display:flex;
@@ -36,9 +36,33 @@ color:white;
 font-size:16px;
 }
 
-ul{
+.receipts{
+display:flex;
+gap:12px;
 margin-top:20px;
-padding-left:20px;
+}
+
+.receipt{
+flex:1;
+background:white;
+padding:12px;
+border-radius:10px;
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.receipt h2{
+font-size:16px;
+margin-bottom:8px;
+}
+
+ul{
+padding-left:16px;
+margin:0;
+}
+
+li{
+font-size:14px;
+margin-bottom:4px;
 }
 
 #totals{

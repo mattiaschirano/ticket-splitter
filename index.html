@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Ticket Splitter</title>
 
 <link rel="stylesheet" href="style.css">
+
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 </head>
@@ -12,18 +16,33 @@
 <body>
 
 <div class="container">
+
 <h1>Ticket Splitter</h1>
 
 <div id="reader"></div>
 
 <button id="manual">Add product manually</button>
 
-<ul id="products"></ul>
+<div class="receipts">
+
+<div class="receipt">
+<h2>🧾 Scontrino A</h2>
+<ul id="receiptA"></ul>
+</div>
+
+<div class="receipt">
+<h2>🧾 Scontrino B</h2>
+<ul id="receiptB"></ul>
+</div>
+
+</div>
 
 <div id="totals"></div>
+
 </div>
 
 <script src="app.js"></script>
 
 </body>
+
 </html>
