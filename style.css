@@ -93,20 +93,22 @@ font-size:16px;
 
 .tabs{
 display:flex;
-gap:20px;
-margin-top:20px;
-border-bottom:1px solid #eee;
+gap:8px;
+margin-top:16px;
 }
 
 .tab{
-background:none;
+flex:1;
+padding:12px;
+border-radius:10px;
+background:#f3f4f6;
 border:none;
 font-size:16px;
-padding-bottom:10px;
 }
 
 .tab.active{
-border-bottom:3px solid black;
+background:#111827;
+color:white;
 }
 
 
