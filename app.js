@@ -207,6 +207,11 @@ document.getElementById("splitBtn").classList.remove("hidden")
 
 function splitShopping(){
 
+let total =
+products.reduce((sum,p)=>sum+p.price,0)
+
+let maxDifference = total * 0.4
+
 let bestMask = 0
 let bestScore = -1
 let bestDiff = Infinity
@@ -228,11 +233,14 @@ sumB += products[i].price
 
 }
 
+let diff = Math.abs(sumA - sumB)
+
+if(diff > maxDifference) continue
+
 let ticketsA = Math.floor(sumA / TICKET_VALUE)
 let ticketsB = Math.floor(sumB / TICKET_VALUE)
 
 let score = ticketsA + ticketsB
-let diff = Math.abs(sumA - sumB)
 
 if(
 score > bestScore ||
