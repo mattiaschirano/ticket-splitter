@@ -207,12 +207,14 @@ document.getElementById("splitBtn").classList.remove("hidden")
 
 function splitShopping(){
 
+if(products.length === 0) return
+
 let bestMask = 0
 let bestScore = -Infinity
 
 let n = products.length
 
-for(let mask=0; mask < (1<<n); mask++){
+for(let mask = 0; mask < (1<<n); mask++){
 
 let sumA = 0
 let sumB = 0
@@ -240,13 +242,13 @@ let score =
 - priceDiff
 
 if(score > bestScore){
-
 bestScore = score
 bestMask = mask
-
 }
 
 }
+
+/* costruzione scontrini */
 
 receiptA = []
 receiptB = []
@@ -261,17 +263,14 @@ receiptB.push(products[i])
 
 }
 
+/* UI */
+
 document.getElementById("productList").classList.add("hidden")
 document.getElementById("tabs").classList.remove("hidden")
 document.getElementById("receiptList").classList.remove("hidden")
 
-document
-.querySelector(".bottom-actions")
-.classList.add("hidden")
-
-document
-.getElementById("summaryCard")
-.classList.remove("hidden")
+document.querySelector(".bottom-actions").classList.add("hidden")
+document.getElementById("summaryCard").classList.remove("hidden")
 
 renderReceipts()
 
