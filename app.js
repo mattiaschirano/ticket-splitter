@@ -103,7 +103,12 @@ let sumB = bestB.reduce((s,p)=>s+p.price,0)
 renderReceipts(bestA,bestB,sumA,sumB)
 
 document.getElementById("shoppingSection").classList.add("hidden")
+
 document.getElementById("receipts").classList.remove("hidden")
+
+document.getElementById("receipts").scrollIntoView({
+behavior:"smooth"
+})
 
 }
 
