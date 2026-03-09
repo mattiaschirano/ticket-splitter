@@ -51,38 +51,58 @@ document.getElementById("splitButton").classList.remove("hidden")
 
 function splitShopping(){
 
-let total = products.reduce((sum,p)=>sum+p.price,0)
+let bestA = []
+let bestB = []
 
-let target = total / 2
+let bestScore = Infinity
 
-let sorted = [...products].sort((a,b)=>b.price-a.price)
+let n = products.length
 
-let receiptA = []
-let receiptB = []
+for(let mask = 0; mask < (1 << n); mask++){
+
+let A = []
+let B = []
 
 let sumA = 0
 let sumB = 0
 
-sorted.forEach(p=>{
+for(let i = 0; i < n; i++){
 
-if(sumA + p.price <= target){
+if(mask & (1 << i)){
 
-receiptA.push(p)
-sumA += p.price
+A.push(products[i])
+sumA += products[i].price
 
 }else{
 
-receiptB.push(p)
-sumB += p.price
+B.push(products[i])
+sumB += products[i].price
 
 }
 
-})
+}
 
-renderReceipts(receiptA,receiptB,sumA,sumB)
+let ticketsA = Math.ceil(sumA / TICKET_VALUE)
+let ticketsB = Math.ceil(sumB / TICKET_VALUE)
+
+let score = Math.abs(ticketsA - ticketsB)
+
+if(score < bestScore){
+
+bestScore = score
+bestA = A
+bestB = B
+
+}
+
+}
+
+let sumA = bestA.reduce((s,p)=>s+p.price,0)
+let sumB = bestB.reduce((s,p)=>s+p.price,0)
+
+renderReceipts(bestA,bestB,sumA,sumB)
 
 document.getElementById("shoppingSection").classList.add("hidden")
-
 document.getElementById("receipts").classList.remove("hidden")
 
 }
