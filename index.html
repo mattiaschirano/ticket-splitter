@@ -1,107 +1,266 @@
-<!DOCTYPE html>
-<html lang="it">
+let scanner
+let scannerRunning = false
+let lastBarcode = null
 
-<head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Ticket Splitter</title>
-
-<link rel="stylesheet" href="style.css">
-
-<script src="https://unpkg.com/html5-qrcode"></script>
-
-</head>
-
-
-<body>
-
-<div class="app">
-
-
-<div class="header">
-
-<h1>Ticket</h1>
-<p>Dividi la spesa con i buoni</p>
-
-</div>
+let products = []
 
 
 
-<div id="cameraContainer" class="camera hidden">
+/* ------------------------------
+CACHE PRODOTTI (localStorage)
+-------------------------------- */
 
-<div id="reader"></div>
+function getProductCache(){
 
-</div>
+let cache = localStorage.getItem("productCache")
 
+if(!cache){
+return {}
+}
 
+return JSON.parse(cache)
 
-<div id="productList" class="product-list"></div>
+}
 
+function saveProductCache(cache){
 
+localStorage.setItem("productCache", JSON.stringify(cache))
 
-<div id="tabs" class="tabs hidden">
-
-<button id="tabA" class="tab active">Mattia</button>
-<button id="tabB" class="tab">Silvia</button>
-
-</div>
-
-
-
-<div id="receiptList" class="product-list hidden"></div>
-
-
-
-<div class="bottom-actions">
-
-<button id="scanBtn" class="scan-button">
-📷 Scansiona
-</button>
-
-<button id="splitBtn" class="scan-button hidden">
-Dividi
-</button>
-
-</div>
+}
 
 
 
-<div id="summaryCard" class="summary hidden">
+/* ------------------------------
+API OPEN FOOD FACTS
+-------------------------------- */
 
-<p id="extraText"></p>
+async function fetchProductName(barcode){
 
-<button id="ticketSummary"></button>
+let cache = getProductCache()
 
-</div>
+if(cache[barcode]){
+return cache[barcode]
+}
+
+try{
+
+let res = await fetch(
+`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`
+)
+
+let data = await res.json()
+
+if(data.status === 1){
+
+let name = data.product.product_name || ""
+
+if(name){
+
+cache[barcode] = name
+saveProductCache(cache)
+
+}
+
+return name
+
+}
+
+}catch(e){
+
+console.log("API error", e)
+
+}
+
+return ""
+
+}
 
 
 
-<div id="priceSheet" class="sheet">
+/* ------------------------------
+SCANNER
+-------------------------------- */
 
-<div class="sheet-content">
+async function startScanner(){
 
-<input id="productNameInput" placeholder="Nome prodotto">
+const camera = document.getElementById("cameraContainer")
 
-<input id="priceInput" type="number" step="0.01" placeholder="Prezzo">
+camera.classList.remove("hidden")
 
-<div class="sheet-actions">
+if(!scanner){
+scanner = new Html5Qrcode("reader")
+}
 
-<button id="cancelPrice">Annulla</button>
-<button id="savePrice">Salva</button>
+if(scannerRunning) return
 
-</div>
+await scanner.start(
 
-</div>
+{ facingMode:"environment" },
 
-</div>
+{
+fps:10,
+qrbox:250
+},
+
+onScanSuccess
+
+)
+
+scannerRunning = true
+
+}
 
 
 
-</div>
+async function stopScanner(){
 
-<script src="app.js"></script>
+if(scanner && scannerRunning){
 
-</body>
-</html>
+await scanner.stop()
+scannerRunning = false
+
+}
+
+document
+.getElementById("cameraContainer")
+.classList.add("hidden")
+
+}
+
+
+
+/* ------------------------------
+SCAN SUCCESS
+-------------------------------- */
+
+async function onScanSuccess(decodedText){
+
+lastBarcode = decodedText
+
+await stopScanner()
+
+const name = await fetchProductName(decodedText)
+
+document
+.getElementById("productNameInput")
+.value = name
+
+document
+.getElementById("priceInput")
+.value = ""
+
+document
+.getElementById("priceSheet")
+.classList.add("active")
+
+}
+
+
+
+/* ------------------------------
+SALVATAGGIO PRODOTTO
+-------------------------------- */
+
+function saveProduct(){
+
+const name =
+document.getElementById("productNameInput").value || "Prodotto"
+
+const price =
+parseFloat(document.getElementById("priceInput").value)
+
+if(!price) return
+
+products.push({
+barcode:lastBarcode,
+name:name,
+price:price
+})
+
+
+
+/* salva anche nella cache */
+
+let cache = getProductCache()
+
+if(lastBarcode && name){
+
+cache[lastBarcode] = name
+saveProductCache(cache)
+
+}
+
+
+
+renderProducts()
+
+document
+.getElementById("priceSheet")
+.classList.remove("active")
+
+}
+
+
+
+/* ------------------------------
+RENDER LISTA PRODOTTI
+-------------------------------- */
+
+function renderProducts(){
+
+const list = document.getElementById("productList")
+
+list.innerHTML = ""
+
+products.forEach(p=>{
+
+const row = document.createElement("div")
+
+row.className = "product-row"
+
+row.innerHTML = `
+<span>${p.name}</span>
+<span>€${p.price.toFixed(2)}</span>
+`
+
+list.appendChild(row)
+
+})
+
+if(products.length > 0){
+
+document
+.getElementById("splitBtn")
+.classList.remove("hidden")
+
+}
+
+}
+
+
+
+/* ------------------------------
+EVENTI
+-------------------------------- */
+
+document.addEventListener("DOMContentLoaded", ()=>{
+
+document
+.getElementById("scanBtn")
+.addEventListener("click", startScanner)
+
+document
+.getElementById("savePrice")
+.addEventListener("click", saveProduct)
+
+document
+.getElementById("cancelPrice")
+.addEventListener("click", ()=>{
+
+document
+.getElementById("priceSheet")
+.classList.remove("active")
+
+})
+
+})

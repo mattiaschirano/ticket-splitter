@@ -6,23 +6,21 @@ let products = []
 
 
 
-/* ------------------------------
-CACHE PRODOTTI (localStorage)
--------------------------------- */
+/* ----------------
+CACHE
+---------------- */
 
-function getProductCache(){
+function getCache(){
 
 let cache = localStorage.getItem("productCache")
 
-if(!cache){
-return {}
-}
+if(!cache) return {}
 
 return JSON.parse(cache)
 
 }
 
-function saveProductCache(cache){
+function saveCache(cache){
 
 localStorage.setItem("productCache", JSON.stringify(cache))
 
@@ -30,13 +28,13 @@ localStorage.setItem("productCache", JSON.stringify(cache))
 
 
 
-/* ------------------------------
-API OPEN FOOD FACTS
--------------------------------- */
+/* ----------------
+API PRODUCT NAME
+---------------- */
 
 async function fetchProductName(barcode){
 
-let cache = getProductCache()
+let cache = getCache()
 
 if(cache[barcode]){
 return cache[barcode]
@@ -57,7 +55,7 @@ let name = data.product.product_name || ""
 if(name){
 
 cache[barcode] = name
-saveProductCache(cache)
+saveCache(cache)
 
 }
 
@@ -66,9 +64,7 @@ return name
 }
 
 }catch(e){
-
-console.log("API error", e)
-
+console.log(e)
 }
 
 return ""
@@ -77,9 +73,9 @@ return ""
 
 
 
-/* ------------------------------
+/* ----------------
 SCANNER
--------------------------------- */
+---------------- */
 
 async function startScanner(){
 
@@ -88,10 +84,13 @@ const camera = document.getElementById("cameraContainer")
 camera.classList.remove("hidden")
 
 if(!scanner){
+
 scanner = new Html5Qrcode("reader")
+
 }
 
 if(scannerRunning) return
+
 
 await scanner.start(
 
@@ -129,9 +128,9 @@ document
 
 
 
-/* ------------------------------
+/* ----------------
 SCAN SUCCESS
--------------------------------- */
+---------------- */
 
 async function onScanSuccess(decodedText){
 
@@ -157,9 +156,9 @@ document
 
 
 
-/* ------------------------------
-SALVATAGGIO PRODOTTO
--------------------------------- */
+/* ----------------
+SAVE PRODUCT
+---------------- */
 
 function saveProduct(){
 
@@ -172,25 +171,9 @@ parseFloat(document.getElementById("priceInput").value)
 if(!price) return
 
 products.push({
-barcode:lastBarcode,
 name:name,
 price:price
 })
-
-
-
-/* salva anche nella cache */
-
-let cache = getProductCache()
-
-if(lastBarcode && name){
-
-cache[lastBarcode] = name
-saveProductCache(cache)
-
-}
-
-
 
 renderProducts()
 
@@ -202,9 +185,9 @@ document
 
 
 
-/* ------------------------------
-RENDER LISTA PRODOTTI
--------------------------------- */
+/* ----------------
+RENDER PRODUCTS
+---------------- */
 
 function renderProducts(){
 
@@ -227,21 +210,13 @@ list.appendChild(row)
 
 })
 
-if(products.length > 0){
-
-document
-.getElementById("splitBtn")
-.classList.remove("hidden")
-
-}
-
 }
 
 
 
-/* ------------------------------
-EVENTI
--------------------------------- */
+/* ----------------
+EVENTS
+---------------- */
 
 document.addEventListener("DOMContentLoaded", ()=>{
 
