@@ -63,7 +63,6 @@ let bestTickets = -1
 let bestBalance = Infinity
 let bestExtra = Infinity
 
-
 for(let mask = 0; mask < (1 << n); mask++){
 
 let A = []
@@ -86,6 +85,12 @@ sumB += products[i].price
 
 }
 
+}
+
+/* evita scontrini vuoti se ci sono più prodotti */
+
+if(n > 1 && (A.length === 0 || B.length === 0)){
+continue
 }
 
 let ticketA = Math.floor(sumA / TICKET_VALUE)
@@ -120,7 +125,6 @@ bestB = B
 }
 
 }
-
 
 let sumA = bestA.reduce((s,p)=>s+p.price,0)
 let sumB = bestB.reduce((s,p)=>s+p.price,0)
