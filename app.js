@@ -3,6 +3,7 @@ let scannerRunning = false
 let lastBarcode = null
 
 let products = []
+
 let receiptA = []
 let receiptB = []
 
@@ -10,35 +11,27 @@ const TICKET_VALUE = 8
 
 
 
-/* ---------------- CACHE ---------------- */
+/* CACHE */
 
 function getCache(){
-
 let cache = localStorage.getItem("productCache")
-
 if(!cache) return {}
-
 return JSON.parse(cache)
-
 }
 
 function saveCache(cache){
-
 localStorage.setItem("productCache", JSON.stringify(cache))
-
 }
 
 
 
-/* ---------------- API PRODUCT NAME ---------------- */
+/* PRODUCT NAME API */
 
 async function fetchProductName(barcode){
 
 let cache = getCache()
 
-if(cache[barcode]){
-return cache[barcode]
-}
+if(cache[barcode]) return cache[barcode]
 
 try{
 
@@ -50,20 +43,18 @@ let data = await res.json()
 
 if(data.status === 1){
 
-let product = data.product
+let p = data.product
 
 let name =
-product.product_name_it ||
-product.product_name ||
-product.generic_name ||
-product.brands ||
+p.product_name_it ||
+p.product_name ||
+p.generic_name ||
+p.brands ||
 ""
 
 if(name){
-
 cache[barcode] = name
 saveCache(cache)
-
 }
 
 return name
@@ -71,7 +62,7 @@ return name
 }
 
 }catch(e){
-console.log("API error", e)
+console.log(e)
 }
 
 return ""
@@ -80,33 +71,24 @@ return ""
 
 
 
-/* ---------------- SCANNER ---------------- */
+/* SCANNER */
 
 async function startScanner(){
 
-const camera = document.getElementById("cameraContainer")
-
-camera.classList.remove("hidden")
+document
+.getElementById("cameraContainer")
+.classList.remove("hidden")
 
 if(!scanner){
-
 scanner = new Html5Qrcode("reader")
-
 }
 
 if(scannerRunning) return
 
 await scanner.start(
-
 { facingMode:"environment" },
-
-{
-fps:10,
-qrbox:250
-},
-
+{ fps:10, qrbox:250 },
 onScanSuccess
-
 )
 
 scannerRunning = true
@@ -118,10 +100,8 @@ scannerRunning = true
 async function stopScanner(){
 
 if(scanner && scannerRunning){
-
 await scanner.stop()
 scannerRunning = false
-
 }
 
 document
@@ -132,7 +112,7 @@ document
 
 
 
-/* ---------------- SCAN SUCCESS ---------------- */
+/* SCAN SUCCESS */
 
 async function onScanSuccess(decodedText){
 
@@ -153,31 +133,22 @@ document
 
 
 
-/* ---------------- SAVE PRODUCT ---------------- */
+/* SAVE PRODUCT */
 
 function saveProduct(){
 
 const name =
 document.getElementById("productNameInput").value || "Prodotto"
 
-const priceInput =
-document.getElementById("priceInput").value
+const price =
+parseFloat(document.getElementById("priceInput").value)
 
-const price = parseFloat(priceInput)
-
-if(!price){
-
-alert("Inserisci il prezzo")
-return
-
-}
+if(!price) return
 
 products.push({
-
 barcode:lastBarcode,
 name:name,
 price:price
-
 })
 
 document
@@ -190,7 +161,7 @@ renderProducts()
 
 
 
-/* ---------------- RENDER PRODUCTS ---------------- */
+/* RENDER LISTA */
 
 function renderProducts(){
 
@@ -214,18 +185,14 @@ list.appendChild(row)
 })
 
 if(products.length > 0){
-
-document
-.getElementById("splitBtn")
-.classList.remove("hidden")
-
+document.getElementById("splitBtn").classList.remove("hidden")
 }
 
 }
 
 
 
-/* ---------------- SPLIT SHOPPING ---------------- */
+/* OTTIMIZZAZIONE SPLIT */
 
 function splitShopping(){
 
@@ -235,9 +202,32 @@ receiptB = []
 let sumA = 0
 let sumB = 0
 
-products.forEach(p=>{
 
-if(sumA <= sumB){
+/* ordina prodotti dal più costoso */
+
+let sorted = [...products].sort((a,b)=>b.price-a.price)
+
+
+
+sorted.forEach(p=>{
+
+let newA = sumA + p.price
+let newB = sumB + p.price
+
+
+/* distanza dal multiplo di ticket */
+
+let distA =
+Math.abs((newA % TICKET_VALUE) - TICKET_VALUE)
+
+let distB =
+Math.abs((newB % TICKET_VALUE) - TICKET_VALUE)
+
+
+
+/* scegli il migliore */
+
+if(distA < distB){
 
 receiptA.push(p)
 sumA += p.price
@@ -251,25 +241,17 @@ sumB += p.price
 
 })
 
-document
-.getElementById("productList")
-.classList.add("hidden")
 
-document
-.getElementById("tabs")
-.classList.remove("hidden")
+document.getElementById("productList").classList.add("hidden")
 
-document
-.getElementById("receiptList")
-.classList.remove("hidden")
+document.getElementById("tabs").classList.remove("hidden")
 
-document
-.querySelector(".bottom-actions")
-.classList.add("hidden")
+document.getElementById("receiptList").classList.remove("hidden")
 
-document
-.getElementById("summaryCard")
-.classList.remove("hidden")
+document.querySelector(".bottom-actions").classList.add("hidden")
+
+document.getElementById("summaryCard").classList.remove("hidden")
+
 
 renderReceipts()
 
@@ -277,7 +259,7 @@ renderReceipts()
 
 
 
-/* ---------------- RENDER RECEIPTS ---------------- */
+/* RENDER RECEIPTS */
 
 function renderReceipts(){
 
@@ -290,6 +272,7 @@ document.getElementById("tabA")
 .classList.contains("active")
 
 let receipt = activeA ? receiptA : receiptB
+
 
 receipt.forEach(p=>{
 
@@ -306,37 +289,33 @@ list.appendChild(row)
 
 })
 
+
 updateSummary()
 
 }
 
 
 
-/* ---------------- SUMMARY ---------------- */
+/* SUMMARY PERSONA */
 
 function updateSummary(){
 
 let activeA =
-document.getElementById("tabA")
-.classList.contains("active")
+document.getElementById("tabA").classList.contains("active")
 
 let receipt = activeA ? receiptA : receiptB
 
 
-/* totale dello scontrino selezionato */
-
-let total = receipt.reduce((sum,p)=>sum+p.price,0)
-
-
-/* ticket utilizzabili */
-
-let tickets = Math.floor(total / TICKET_VALUE)
+let total =
+receipt.reduce((sum,p)=>sum+p.price,0)
 
 
-/* resto da pagare */
+let tickets =
+Math.floor(total / TICKET_VALUE)
 
-let extra = total - (tickets * TICKET_VALUE)
 
+let extra =
+total - tickets*TICKET_VALUE
 
 
 document.getElementById("ticketSummary").innerText =
@@ -350,25 +329,25 @@ document.getElementById("extraText").innerText =
 
 
 
-/* ---------------- EVENTS ---------------- */
+/* EVENTS */
 
-document.addEventListener("DOMContentLoaded", ()=>{
+document.addEventListener("DOMContentLoaded",()=>{
 
 document
 .getElementById("scanBtn")
-.addEventListener("click", startScanner)
+.addEventListener("click",startScanner)
 
 document
 .getElementById("savePrice")
-.addEventListener("click", saveProduct)
+.addEventListener("click",saveProduct)
 
 document
 .getElementById("splitBtn")
-.addEventListener("click", splitShopping)
+.addEventListener("click",splitShopping)
 
 document
 .getElementById("cancelPrice")
-.addEventListener("click", ()=>{
+.addEventListener("click",()=>{
 
 document
 .getElementById("priceSheet")
@@ -376,9 +355,10 @@ document
 
 })
 
+
 document
 .getElementById("tabA")
-.addEventListener("click", ()=>{
+.addEventListener("click",()=>{
 
 document.getElementById("tabA").classList.add("active")
 document.getElementById("tabB").classList.remove("active")
@@ -387,9 +367,10 @@ renderReceipts()
 
 })
 
+
 document
 .getElementById("tabB")
-.addEventListener("click", ()=>{
+.addEventListener("click",()=>{
 
 document.getElementById("tabB").classList.add("active")
 document.getElementById("tabA").classList.remove("active")
