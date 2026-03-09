@@ -1,5 +1,7 @@
 let products = []
 
+let scanningLocked = false
+
 function updateTotals(){
 
 let total = products.reduce((sum,p)=>sum+p.price,0)
@@ -42,7 +44,10 @@ function addProduct(barcode){
 
 let price = prompt("Prezzo prodotto:")
 
-if(!price) return
+if(!price){
+scanningLocked = false
+return
+}
 
 let product = {
 barcode:barcode,
@@ -52,10 +57,21 @@ price:parseFloat(price)
 products.push(product)
 
 updateTotals()
+
+// riattiva scanner dopo 1.5 secondi
+setTimeout(()=>{
+scanningLocked = false
+},1500)
 }
 
 function onScanSuccess(decodedText){
+
+if(scanningLocked) return
+
+scanningLocked = true
+
 addProduct(decodedText)
+
 }
 
 let scanner = new Html5QrcodeScanner(
