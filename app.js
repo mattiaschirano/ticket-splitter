@@ -4,6 +4,8 @@ let scanner
 let scannerRunning = false
 let lastBarcode = null
 
+const TICKET_VALUE = 8
+
 
 async function fetchProductName(barcode){
 
@@ -59,6 +61,7 @@ let receiptA = []
 let receiptB = []
 
 let sumA = 0
+let sumB = 0
 
 sorted.forEach(p=>{
 
@@ -70,17 +73,22 @@ sumA += p.price
 }else{
 
 receiptB.push(p)
+sumB += p.price
 
 }
 
 })
 
-renderReceipts(receiptA,receiptB)
+renderReceipts(receiptA,receiptB,sumA,sumB)
+
+document.getElementById("shoppingSection").classList.add("hidden")
+
+document.getElementById("receipts").classList.remove("hidden")
 
 }
 
 
-function renderReceipts(A,B){
+function renderReceipts(A,B,sumA,sumB){
 
 let listA = document.getElementById("receiptA")
 let listB = document.getElementById("receiptB")
@@ -104,7 +112,11 @@ listB.appendChild(li)
 
 })
 
-document.getElementById("receipts").classList.remove("hidden")
+let ticketsA = Math.ceil(sumA / TICKET_VALUE)
+let ticketsB = Math.ceil(sumB / TICKET_VALUE)
+
+document.getElementById("ticketsA").innerText = `${ticketsA} ticket`
+document.getElementById("ticketsB").innerText = `${ticketsB} ticket`
 
 }
 
