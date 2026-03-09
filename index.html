@@ -1,266 +1,70 @@
-let scanner
-let scannerRunning = false
-let lastBarcode = null
+<!DOCTYPE html>
+<html lang="it">
 
-let products = []
+<head>
 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Ticket</title>
 
-/* ------------------------------
-CACHE PRODOTTI (localStorage)
--------------------------------- */
+<link rel="stylesheet" href="style.css">
 
-function getProductCache(){
+<script src="https://unpkg.com/html5-qrcode"></script>
 
-let cache = localStorage.getItem("productCache")
+</head>
 
-if(!cache){
-return {}
-}
+<body>
 
-return JSON.parse(cache)
+<div class="app">
 
-}
+<div class="header">
 
-function saveProductCache(cache){
+<h1>Ticket</h1>
+<p>Dividi la spesa con i buoni</p>
 
-localStorage.setItem("productCache", JSON.stringify(cache))
+</div>
 
-}
 
+<div id="cameraContainer" class="camera hidden">
+<div id="reader"></div>
+</div>
 
 
-/* ------------------------------
-API OPEN FOOD FACTS
--------------------------------- */
+<div id="productList" class="product-list"></div>
 
-async function fetchProductName(barcode){
 
-let cache = getProductCache()
+<div class="bottom-actions">
 
-if(cache[barcode]){
-return cache[barcode]
-}
+<button id="scanBtn" class="scan-button">
+📷 Scansiona
+</button>
 
-try{
+</div>
 
-let res = await fetch(
-`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`
-)
 
-let data = await res.json()
+<div id="priceSheet" class="sheet">
 
-if(data.status === 1){
+<div class="sheet-content">
 
-let name = data.product.product_name || ""
+<input id="productNameInput" placeholder="Nome prodotto">
 
-if(name){
+<input id="priceInput" type="number" step="0.01" placeholder="Prezzo">
 
-cache[barcode] = name
-saveProductCache(cache)
+<div class="sheet-actions">
 
-}
+<button id="cancelPrice">Annulla</button>
+<button id="savePrice">Salva</button>
 
-return name
+</div>
 
-}
+</div>
 
-}catch(e){
+</div>
 
-console.log("API error", e)
+</div>
 
-}
+<script src="app.js"></script>
 
-return ""
-
-}
-
-
-
-/* ------------------------------
-SCANNER
--------------------------------- */
-
-async function startScanner(){
-
-const camera = document.getElementById("cameraContainer")
-
-camera.classList.remove("hidden")
-
-if(!scanner){
-scanner = new Html5Qrcode("reader")
-}
-
-if(scannerRunning) return
-
-await scanner.start(
-
-{ facingMode:"environment" },
-
-{
-fps:10,
-qrbox:250
-},
-
-onScanSuccess
-
-)
-
-scannerRunning = true
-
-}
-
-
-
-async function stopScanner(){
-
-if(scanner && scannerRunning){
-
-await scanner.stop()
-scannerRunning = false
-
-}
-
-document
-.getElementById("cameraContainer")
-.classList.add("hidden")
-
-}
-
-
-
-/* ------------------------------
-SCAN SUCCESS
--------------------------------- */
-
-async function onScanSuccess(decodedText){
-
-lastBarcode = decodedText
-
-await stopScanner()
-
-const name = await fetchProductName(decodedText)
-
-document
-.getElementById("productNameInput")
-.value = name
-
-document
-.getElementById("priceInput")
-.value = ""
-
-document
-.getElementById("priceSheet")
-.classList.add("active")
-
-}
-
-
-
-/* ------------------------------
-SALVATAGGIO PRODOTTO
--------------------------------- */
-
-function saveProduct(){
-
-const name =
-document.getElementById("productNameInput").value || "Prodotto"
-
-const price =
-parseFloat(document.getElementById("priceInput").value)
-
-if(!price) return
-
-products.push({
-barcode:lastBarcode,
-name:name,
-price:price
-})
-
-
-
-/* salva anche nella cache */
-
-let cache = getProductCache()
-
-if(lastBarcode && name){
-
-cache[lastBarcode] = name
-saveProductCache(cache)
-
-}
-
-
-
-renderProducts()
-
-document
-.getElementById("priceSheet")
-.classList.remove("active")
-
-}
-
-
-
-/* ------------------------------
-RENDER LISTA PRODOTTI
--------------------------------- */
-
-function renderProducts(){
-
-const list = document.getElementById("productList")
-
-list.innerHTML = ""
-
-products.forEach(p=>{
-
-const row = document.createElement("div")
-
-row.className = "product-row"
-
-row.innerHTML = `
-<span>${p.name}</span>
-<span>€${p.price.toFixed(2)}</span>
-`
-
-list.appendChild(row)
-
-})
-
-if(products.length > 0){
-
-document
-.getElementById("splitBtn")
-.classList.remove("hidden")
-
-}
-
-}
-
-
-
-/* ------------------------------
-EVENTI
--------------------------------- */
-
-document.addEventListener("DOMContentLoaded", ()=>{
-
-document
-.getElementById("scanBtn")
-.addEventListener("click", startScanner)
-
-document
-.getElementById("savePrice")
-.addEventListener("click", saveProduct)
-
-document
-.getElementById("cancelPrice")
-.addEventListener("click", ()=>{
-
-document
-.getElementById("priceSheet")
-.classList.remove("active")
-
-})
-
-})
+</body>
+</html>
