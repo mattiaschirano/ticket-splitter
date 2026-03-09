@@ -1,3 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ticket Splitter</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Ticket Splitter</h1>
+
+<div id="reader"></div>
+
+<button id="startScan">Scan product</button>
+
+
+<div id="shoppingSection">
+
+<h2>🛒 Spesa</h2>
+
+<ul id="shoppingList"></ul>
+
+<button id="splitButton" class="hidden">
+Dividi spesa
+</button>
+
+</div>
+
+
 <div id="receipts" class="hidden">
 
 <div class="receipts">
@@ -25,3 +63,35 @@
 </div>
 
 </div>
+
+</div>
+
+
+<div id="priceSheet" class="sheet">
+
+<div class="sheet-content">
+
+<h3>Nuovo prodotto</h3>
+
+<label>Nome prodotto</label>
+<input id="productNameInput">
+
+<label>Prezzo</label>
+<input id="priceInput" type="number">
+
+<div class="sheet-buttons">
+
+<button id="cancelPrice">Annulla</button>
+<button id="savePrice">Salva</button>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+
+</html>
