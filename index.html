@@ -17,12 +17,22 @@
 
 <body>
 
-<div class="container">
+<div class="app">
 
 
 <div class="header">
 
-<h1>Dividi la spesa con i tuoi buoni pasto</h1>
+<h1>Ticket</h1>
+<p>Dividi la spesa con i buoni</p>
+
+</div>
+
+
+
+<div id="cameraContainer" class="camera hidden">
+
+<div id="reader"></div>
+
 </div>
 
 
@@ -33,8 +43,8 @@
 
 <div id="tabs" class="tabs hidden">
 
-<button class="tab active" id="tabA">Mattia</button>
-<button class="tab" id="tabB">Silvia</button>
+<button id="tabA" class="tab active">Mattia</button>
+<button id="tabB" class="tab">Silvia</button>
 
 </div>
 
@@ -46,11 +56,11 @@
 
 <div class="bottom-actions">
 
-<button id="scanBtn" class="primary">
+<button id="scanBtn" class="scan-button">
 📷 Scansiona
 </button>
 
-<button id="splitBtn" class="secondary hidden">
+<button id="splitBtn" class="scan-button hidden">
 Dividi
 </button>
 
@@ -68,17 +78,9 @@ Dividi
 
 
 
-<div id="cameraContainer" class="camera-container hidden">
-  <div id="reader"></div>
-</div>
-
-
-
 <div id="priceSheet" class="sheet">
 
 <div class="sheet-content">
-
-<h3>Prodotto</h3>
 
 <input id="productNameInput" placeholder="Nome prodotto">
 
@@ -86,7 +88,7 @@ Dividi
 
 <div class="sheet-actions">
 
-<button id="cancelPrice">Annullaa</button>
+<button id="cancelPrice">Annulla</button>
 <button id="savePrice">Salva</button>
 
 </div>
@@ -96,10 +98,10 @@ Dividi
 </div>
 
 
+
 </div>
 
 <script src="app.js"></script>
 
 </body>
-
 </html>
