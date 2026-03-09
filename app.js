@@ -3,7 +3,6 @@ let scannerRunning = false
 let lastBarcode = null
 
 let products = []
-
 let receiptA = []
 let receiptB = []
 
@@ -11,27 +10,21 @@ const TICKET_VALUE = 8
 
 
 
-/* ---------------- CACHE ---------------- */
+/* CACHE */
 
 function getCache(){
-
 let cache = localStorage.getItem("productCache")
-
 if(!cache) return {}
-
 return JSON.parse(cache)
-
 }
 
 function saveCache(cache){
-
 localStorage.setItem("productCache", JSON.stringify(cache))
-
 }
 
 
 
-/* ---------------- API PRODUCT NAME ---------------- */
+/* API */
 
 async function fetchProductName(barcode){
 
@@ -54,10 +47,8 @@ if(data.status === 1){
 let name = data.product.product_name || ""
 
 if(name){
-
 cache[barcode] = name
 saveCache(cache)
-
 }
 
 return name
@@ -74,49 +65,35 @@ return ""
 
 
 
-/* ---------------- SCANNER ---------------- */
+/* SCANNER */
 
 async function startScanner(){
 
-const camera = document.getElementById("cameraContainer")
-
-camera.classList.remove("hidden")
+document
+.getElementById("cameraContainer")
+.classList.remove("hidden")
 
 if(!scanner){
-
 scanner = new Html5Qrcode("reader")
-
 }
 
 if(scannerRunning) return
 
-
 await scanner.start(
-
 { facingMode:"environment" },
-
-{
-fps:10,
-qrbox:250
-},
-
+{ fps:10, qrbox:250 },
 onScanSuccess
-
 )
 
 scannerRunning = true
 
 }
 
-
-
 async function stopScanner(){
 
 if(scanner && scannerRunning){
-
 await scanner.stop()
 scannerRunning = false
-
 }
 
 document
@@ -127,7 +104,7 @@ document
 
 
 
-/* ---------------- SCAN SUCCESS ---------------- */
+/* SCAN SUCCESS */
 
 async function onScanSuccess(decodedText){
 
@@ -140,13 +117,15 @@ const name = await fetchProductName(decodedText)
 document.getElementById("productNameInput").value = name
 document.getElementById("priceInput").value = ""
 
-document.getElementById("priceSheet").classList.add("active")
+document
+.getElementById("priceSheet")
+.classList.add("active")
 
 }
 
 
 
-/* ---------------- SAVE PRODUCT ---------------- */
+/* SAVE PRODUCT */
 
 function saveProduct(){
 
@@ -174,7 +153,7 @@ document
 
 
 
-/* ---------------- RENDER PRODUCTS ---------------- */
+/* RENDER LISTA SPESA */
 
 function renderProducts(){
 
@@ -209,7 +188,7 @@ document
 
 
 
-/* ---------------- SPLIT SHOPPING ---------------- */
+/* SPLIT */
 
 function splitShopping(){
 
@@ -222,18 +201,34 @@ let sumB = 0
 products.forEach(p=>{
 
 if(sumA <= sumB){
-
 receiptA.push(p)
 sumA += p.price
-
 }else{
-
 receiptB.push(p)
 sumB += p.price
-
 }
 
 })
+
+document
+.getElementById("productList")
+.classList.add("hidden")
+
+document
+.getElementById("tabs")
+.classList.remove("hidden")
+
+document
+.getElementById("receiptList")
+.classList.remove("hidden")
+
+document
+.querySelector(".bottom-actions")
+.classList.add("hidden")
+
+document
+.getElementById("summaryCard")
+.classList.remove("hidden")
 
 renderReceipts()
 
@@ -241,15 +236,21 @@ renderReceipts()
 
 
 
-/* ---------------- RENDER RECEIPTS ---------------- */
+/* RENDER RECEIPTS */
 
 function renderReceipts(){
 
-const list = document.getElementById("productList")
+const list = document.getElementById("receiptList")
 
 list.innerHTML = ""
 
-receiptA.forEach(p=>{
+let activeA =
+document.getElementById("tabA")
+.classList.contains("active")
+
+let receipt = activeA ? receiptA : receiptB
+
+receipt.forEach(p=>{
 
 const row = document.createElement("div")
 
@@ -264,11 +265,33 @@ list.appendChild(row)
 
 })
 
+updateSummary()
+
 }
 
 
 
-/* ---------------- EVENTS ---------------- */
+/* SUMMARY */
+
+function updateSummary(){
+
+let total = products.reduce((s,p)=>s+p.price,0)
+
+let tickets = Math.floor(total / TICKET_VALUE)
+
+let extra = total - tickets*TICKET_VALUE
+
+document.getElementById("ticketSummary").innerText =
+`€${total.toFixed(2)} · ${tickets} ticket`
+
+document.getElementById("extraText").innerText =
+`€${extra.toFixed(2)} da pagare tramite carta`
+
+}
+
+
+
+/* EVENTS */
 
 document.addEventListener("DOMContentLoaded", ()=>{
 
@@ -291,6 +314,28 @@ document
 document
 .getElementById("priceSheet")
 .classList.remove("active")
+
+})
+
+document
+.getElementById("tabA")
+.addEventListener("click", ()=>{
+
+document.getElementById("tabA").classList.add("active")
+document.getElementById("tabB").classList.remove("active")
+
+renderReceipts()
+
+})
+
+document
+.getElementById("tabB")
+.addEventListener("click", ()=>{
+
+document.getElementById("tabB").classList.add("active")
+document.getElementById("tabA").classList.remove("active")
+
+renderReceipts()
 
 })
 

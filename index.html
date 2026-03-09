@@ -14,25 +14,43 @@
 
 </head>
 
+
 <body>
 
 <div class="app">
 
 <div class="header">
-
 <h1>Ticket</h1>
 <p>Dividi la spesa con i buoni</p>
-
 </div>
 
+
+<!-- CAMERA -->
 
 <div id="cameraContainer" class="camera hidden">
 <div id="reader"></div>
 </div>
 
 
+<!-- LISTA SPESA -->
+
 <div id="productList" class="product-list"></div>
 
+
+<!-- TAB PERSONE -->
+
+<div id="tabs" class="tabs hidden">
+<button id="tabA" class="tab active">Mattia</button>
+<button id="tabB" class="tab">Silvia</button>
+</div>
+
+
+<!-- LISTA SCONTRINO -->
+
+<div id="receiptList" class="product-list hidden"></div>
+
+
+<!-- BOTTONI -->
 
 <div class="bottom-actions">
 
@@ -40,8 +58,25 @@
 📷 Scansiona
 </button>
 
+<button id="splitBtn" class="scan-button hidden">
+Dividi
+</button>
+
 </div>
 
+
+<!-- SUMMARY -->
+
+<div id="summaryCard" class="summary hidden">
+
+<p id="extraText"></p>
+
+<button id="ticketSummary"></button>
+
+</div>
+
+
+<!-- BOTTOM SHEET -->
 
 <div id="priceSheet" class="sheet">
 
@@ -61,6 +96,7 @@
 </div>
 
 </div>
+
 
 </div>
 
