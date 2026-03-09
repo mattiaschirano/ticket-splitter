@@ -316,14 +316,32 @@ updateSummary()
 
 function updateSummary(){
 
-let total = products.reduce((sum,p)=>sum+p.price,0)
+let activeA =
+document.getElementById("tabA")
+.classList.contains("active")
+
+let receipt = activeA ? receiptA : receiptB
+
+
+/* totale dello scontrino selezionato */
+
+let total = receipt.reduce((sum,p)=>sum+p.price,0)
+
+
+/* ticket utilizzabili */
 
 let tickets = Math.floor(total / TICKET_VALUE)
 
-let extra = total - tickets*TICKET_VALUE
+
+/* resto da pagare */
+
+let extra = total - (tickets * TICKET_VALUE)
+
+
 
 document.getElementById("ticketSummary").innerText =
 `€${total.toFixed(2)} · ${tickets} ticket`
+
 
 document.getElementById("extraText").innerText =
 `€${extra.toFixed(2)} da pagare tramite carta`
