@@ -25,12 +25,62 @@ return ""
 }
 
 
-function updateTotals(){
+function updateShoppingList(){
+
+let list = document.getElementById("shoppingList")
+
+list.innerHTML = ""
+
+products.forEach(p=>{
+
+let li = document.createElement("li")
+li.innerText = `${p.name} - €${p.price}`
+
+list.appendChild(li)
+
+})
+
+if(products.length > 0){
+document.getElementById("splitButton").classList.remove("hidden")
+}
+
+}
+
+
+function splitShopping(){
 
 let total = products.reduce((sum,p)=>sum+p.price,0)
 
-let scontrinoA = 0
-let scontrinoB = 0
+let target = total / 2
+
+let sorted = [...products].sort((a,b)=>b.price-a.price)
+
+let receiptA = []
+let receiptB = []
+
+let sumA = 0
+
+sorted.forEach(p=>{
+
+if(sumA + p.price <= target){
+
+receiptA.push(p)
+sumA += p.price
+
+}else{
+
+receiptB.push(p)
+
+}
+
+})
+
+renderReceipts(receiptA,receiptB)
+
+}
+
+
+function renderReceipts(A,B){
 
 let listA = document.getElementById("receiptA")
 let listB = document.getElementById("receiptB")
@@ -38,29 +88,24 @@ let listB = document.getElementById("receiptB")
 listA.innerHTML = ""
 listB.innerHTML = ""
 
-products.forEach(p=>{
+A.forEach(p=>{
 
 let li = document.createElement("li")
 li.innerText = `${p.name} - €${p.price}`
-
-if(scontrinoA + p.price <= 64){
-
-scontrinoA += p.price
 listA.appendChild(li)
-
-}else{
-
-scontrinoB += p.price
-listB.appendChild(li)
-
-}
 
 })
 
-document.getElementById("totals").innerText =
-`Totale €${total.toFixed(2)}
-Scontrino A €${scontrinoA.toFixed(2)}
-Scontrino B €${scontrinoB.toFixed(2)}`
+B.forEach(p=>{
+
+let li = document.createElement("li")
+li.innerText = `${p.name} - €${p.price}`
+listB.appendChild(li)
+
+})
+
+document.getElementById("receipts").classList.remove("hidden")
+
 }
 
 
@@ -76,9 +121,7 @@ document.getElementById("priceSheet").classList.remove("active")
 async function startScanner(){
 
 if(!scanner){
-
 scanner = new Html5Qrcode("reader")
-
 }
 
 if(scannerRunning) return
@@ -142,7 +185,7 @@ document.getElementById("priceInput").value = ""
 
 closeSheet()
 
-updateTotals()
+updateShoppingList()
 
 }
 
@@ -157,5 +200,12 @@ closeSheet()
 document.getElementById("startScan").onclick = () => {
 
 startScanner()
+
+}
+
+
+document.getElementById("splitButton").onclick = () => {
+
+splitShopping()
 
 }

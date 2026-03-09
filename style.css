@@ -35,6 +35,14 @@ font-size:16px;
 margin-top:10px;
 }
 
+ul{
+padding-left:16px;
+}
+
+.hidden{
+display:none;
+}
+
 .receipts{
 display:flex;
 gap:12px;
@@ -53,25 +61,6 @@ box-shadow:0 2px 6px rgba(0,0,0,0.1);
 font-size:16px;
 margin-bottom:8px;
 }
-
-ul{
-padding-left:16px;
-margin:0;
-}
-
-li{
-font-size:14px;
-margin-bottom:4px;
-}
-
-#totals{
-margin-top:20px;
-font-size:18px;
-font-weight:600;
-}
-
-
-/* bottom sheet */
 
 .sheet{
 position:fixed;
