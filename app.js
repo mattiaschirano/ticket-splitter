@@ -1,6 +1,7 @@
 let products = []
 
 let scanner
+let scannerRunning = false
 let lastBarcode = null
 
 
@@ -9,7 +10,6 @@ async function fetchProductName(barcode){
 try{
 
 let res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`)
-
 let data = await res.json()
 
 if(data.status === 1){
@@ -65,23 +65,25 @@ Scontrino B €${scontrinoB.toFixed(2)}`
 
 
 function openSheet(){
-
 document.getElementById("priceSheet").classList.add("active")
-
 }
 
 function closeSheet(){
-
 document.getElementById("priceSheet").classList.remove("active")
-
 }
 
 
-function startScanner(){
+async function startScanner(){
+
+if(!scanner){
 
 scanner = new Html5Qrcode("reader")
 
-scanner.start(
+}
+
+if(scannerRunning) return
+
+await scanner.start(
 { facingMode: "environment" },
 {
 fps:10,
@@ -90,13 +92,19 @@ qrbox:250
 onScanSuccess
 )
 
+scannerRunning = true
+
 }
 
 
-function stopScanner(){
+async function stopScanner(){
 
-if(scanner){
-scanner.stop()
+if(scanner && scannerRunning){
+
+await scanner.stop()
+
+scannerRunning = false
+
 }
 
 }
@@ -106,7 +114,7 @@ async function onScanSuccess(decodedText){
 
 lastBarcode = decodedText
 
-stopScanner()
+await stopScanner()
 
 let name = await fetchProductName(decodedText)
 
@@ -136,16 +144,12 @@ closeSheet()
 
 updateTotals()
 
-startScanner()
-
 }
 
 
 document.getElementById("cancelPrice").onclick = () => {
 
 closeSheet()
-
-startScanner()
 
 }
 
