@@ -12,28 +12,22 @@ max-width:420px;
 padding:20px;
 }
 
-h1{
-font-size:22px;
-margin-bottom:16px;
-}
-
 #reader{
 width:100%;
-background:white;
 border-radius:12px;
-padding:10px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
+overflow:hidden;
+margin-bottom:10px;
 }
 
 button{
 width:100%;
 padding:14px;
-margin-top:12px;
 border:none;
 border-radius:10px;
 background:black;
 color:white;
 font-size:16px;
+margin-top:10px;
 }
 
 .receipts{
@@ -50,23 +44,45 @@ border-radius:10px;
 box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
 
-.receipt h2{
-font-size:16px;
-margin-bottom:8px;
-}
-
-ul{
-padding-left:16px;
-margin:0;
-}
-
-li{
-font-size:14px;
-margin-bottom:4px;
-}
-
 #totals{
 margin-top:20px;
-font-size:18px;
 font-weight:600;
+}
+
+
+/* bottom sheet */
+
+.sheet{
+position:fixed;
+bottom:-100%;
+left:0;
+right:0;
+background:white;
+border-radius:20px 20px 0 0;
+box-shadow:0 -4px 20px rgba(0,0,0,0.2);
+transition:0.3s;
+padding:20px;
+}
+
+.sheet.active{
+bottom:0;
+}
+
+.sheet input{
+width:100%;
+padding:14px;
+font-size:18px;
+margin-top:10px;
+border:1px solid #ddd;
+border-radius:10px;
+}
+
+.sheet-buttons{
+display:flex;
+gap:10px;
+margin-top:15px;
+}
+
+.sheet-buttons button{
+flex:1;
 }

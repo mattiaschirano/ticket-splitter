@@ -1,6 +1,7 @@
 let products = []
 
-let scanningLocked = false
+let scanner
+let lastBarcode = null
 
 function updateTotals(){
 
@@ -40,49 +41,87 @@ Scontrino A €${scontrinoA.toFixed(2)}
 Scontrino B €${scontrinoB.toFixed(2)}`
 }
 
-function addProduct(barcode){
 
-let price = prompt("Prezzo prodotto:")
+function openSheet(){
 
-if(!price){
-scanningLocked = false
-return
+document.getElementById("priceSheet").classList.add("active")
+
 }
 
-let product = {
-barcode:barcode,
-price:parseFloat(price)
+function closeSheet(){
+
+document.getElementById("priceSheet").classList.remove("active")
+
 }
 
-products.push(product)
 
-updateTotals()
+function startScanner(){
 
-// riattiva scanner dopo 1.5 secondi
-setTimeout(()=>{
-scanningLocked = false
-},1500)
+scanner = new Html5Qrcode("reader")
+
+scanner.start(
+{ facingMode: "environment" },
+{
+fps:10,
+qrbox:250
+},
+onScanSuccess
+)
+
+}
+
+function stopScanner(){
+
+if(scanner){
+scanner.stop()
+}
+
 }
 
 function onScanSuccess(decodedText){
 
-if(scanningLocked) return
+lastBarcode = decodedText
 
-scanningLocked = true
+stopScanner()
 
-addProduct(decodedText)
+openSheet()
 
 }
 
-let scanner = new Html5QrcodeScanner(
-"reader",
-{
-fps:10,
-qrbox:{width:250,height:250}
+
+document.getElementById("savePrice").onclick = () => {
+
+let price = parseFloat(document.getElementById("priceInput").value)
+
+if(!price) return
+
+products.push({
+barcode:lastBarcode,
+price:price
 })
 
-scanner.render(onScanSuccess)
+document.getElementById("priceInput").value = ""
 
-document.getElementById("manual").onclick = ()=>{
-addProduct("manual")
+closeSheet()
+
+updateTotals()
+
+startScanner()
+
+}
+
+
+document.getElementById("cancelPrice").onclick = () => {
+
+closeSheet()
+
+startScanner()
+
+}
+
+
+document.getElementById("startScan").onclick = () => {
+
+startScanner()
+
 }
