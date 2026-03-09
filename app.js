@@ -7,6 +7,7 @@ let lastBarcode = null
 const TICKET_VALUE = 8
 
 
+
 async function fetchProductName(barcode){
 
 try{
@@ -25,6 +26,7 @@ return ""
 }
 
 }
+
 
 
 function updateShoppingList(){
@@ -49,6 +51,7 @@ document.getElementById("splitButton").classList.remove("hidden")
 }
 
 
+
 function splitShopping(){
 
 let n = products.length
@@ -57,7 +60,9 @@ let bestA = []
 let bestB = []
 
 let bestTickets = -1
+let bestBalance = Infinity
 let bestExtra = Infinity
+
 
 for(let mask = 0; mask < (1 << n); mask++){
 
@@ -90,14 +95,23 @@ let extraA = sumA - ticketA * TICKET_VALUE
 let extraB = sumB - ticketB * TICKET_VALUE
 
 let totalTickets = ticketA + ticketB
+let balance = Math.abs(sumA - sumB)
 let totalExtra = extraA + extraB
+
 
 if(
 totalTickets > bestTickets ||
-(totalTickets === bestTickets && totalExtra < bestExtra)
+(
+totalTickets === bestTickets &&
+(
+balance < bestBalance ||
+(balance === bestBalance && totalExtra < bestExtra)
+)
+)
 ){
 
 bestTickets = totalTickets
+bestBalance = balance
 bestExtra = totalExtra
 
 bestA = A
@@ -106,6 +120,7 @@ bestB = B
 }
 
 }
+
 
 let sumA = bestA.reduce((s,p)=>s+p.price,0)
 let sumB = bestB.reduce((s,p)=>s+p.price,0)
@@ -122,6 +137,7 @@ behavior:"smooth"
 }
 
 
+
 function renderReceipts(A,B,sumA,sumB){
 
 let listA = document.getElementById("receiptA")
@@ -130,27 +146,33 @@ let listB = document.getElementById("receiptB")
 listA.innerHTML = ""
 listB.innerHTML = ""
 
+
 A.forEach(p=>{
 
 let li = document.createElement("li")
 li.innerText = `${p.name} - €${p.price}`
+
 listA.appendChild(li)
 
 })
+
 
 B.forEach(p=>{
 
 let li = document.createElement("li")
 li.innerText = `${p.name} - €${p.price}`
+
 listB.appendChild(li)
 
 })
+
 
 let ticketsA = Math.floor(sumA / TICKET_VALUE)
 let ticketsB = Math.floor(sumB / TICKET_VALUE)
 
 let extraA = sumA - ticketsA * TICKET_VALUE
 let extraB = sumB - ticketsB * TICKET_VALUE
+
 
 document.getElementById("summaryA").innerHTML = `
 Totale: €${sumA.toFixed(2)}<br>
@@ -167,6 +189,7 @@ Da pagare fuori ticket: €${extraB.toFixed(2)}
 }
 
 
+
 function openSheet(){
 document.getElementById("priceSheet").classList.add("active")
 }
@@ -174,6 +197,7 @@ document.getElementById("priceSheet").classList.add("active")
 function closeSheet(){
 document.getElementById("priceSheet").classList.remove("active")
 }
+
 
 
 async function startScanner(){
@@ -198,6 +222,7 @@ scannerRunning = true
 }
 
 
+
 async function stopScanner(){
 
 if(scanner && scannerRunning){
@@ -209,6 +234,7 @@ scannerRunning = false
 }
 
 }
+
 
 
 async function onScanSuccess(decodedText){
@@ -224,6 +250,7 @@ document.getElementById("productNameInput").value = name
 openSheet()
 
 }
+
 
 
 document.getElementById("savePrice").onclick = () => {
@@ -248,6 +275,7 @@ updateShoppingList()
 }
 
 
+
 document.getElementById("cancelPrice").onclick = () => {
 
 closeSheet()
@@ -255,11 +283,13 @@ closeSheet()
 }
 
 
+
 document.getElementById("startScan").onclick = () => {
 
 startScanner()
 
 }
+
 
 
 document.getElementById("splitButton").onclick = () => {
