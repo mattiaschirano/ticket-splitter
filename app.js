@@ -205,80 +205,52 @@ document.getElementById("splitBtn").classList.remove("hidden")
 
 /* SPLIT OTTIMIZZATO PER TICKET */
 
-function splitShopping(){
+function updateSummary(){
 
 let total =
 products.reduce((sum,p)=>sum+p.price,0)
 
-let maxDifference = total * 0.4
+let totalTickets =
+Math.floor(total / TICKET_VALUE)
 
-let bestMask = 0
-let bestScore = -1
-let bestDiff = Infinity
+let covered =
+totalTickets * TICKET_VALUE
 
-let n = products.length
+let extra =
+total - covered
 
-for(let mask=0; mask < (1<<n); mask++){
+let extraPerPerson =
+extra / 2
 
-let sumA = 0
-let sumB = 0
 
-for(let i=0;i<n;i++){
+let totalA =
+receiptA.reduce((sum,p)=>sum+p.price,0)
 
-if(mask & (1<<i)){
-sumA += products[i].price
-}else{
-sumB += products[i].price
-}
+let totalB =
+receiptB.reduce((sum,p)=>sum+p.price,0)
 
-}
 
-let diff = Math.abs(sumA - sumB)
+let ticketsA =
+Math.floor(totalA / TICKET_VALUE)
 
-if(diff > maxDifference) continue
+let ticketsB =
+Math.floor(totalB / TICKET_VALUE)
 
-let ticketsA = Math.floor(sumA / TICKET_VALUE)
-let ticketsB = Math.floor(sumB / TICKET_VALUE)
 
-let score = ticketsA + ticketsB
+let activeA =
+document.getElementById("tabA")
+.classList.contains("active")
 
-if(
-score > bestScore ||
-(score === bestScore && diff < bestDiff)
-){
-bestScore = score
-bestDiff = diff
-bestMask = mask
-}
 
-}
+let tickets =
+activeA ? ticketsA : ticketsB
 
-receiptA = []
-receiptB = []
 
-for(let i=0;i<n;i++){
+document.getElementById("ticketSummary").innerText =
+`${tickets} ticket da usare`
 
-if(bestMask & (1<<i)){
-receiptA.push(products[i])
-}else{
-receiptB.push(products[i])
-}
-
-}
-
-document.getElementById("productList").classList.add("hidden")
-document.getElementById("tabs").classList.remove("hidden")
-document.getElementById("receiptList").classList.remove("hidden")
-
-document
-.querySelector(".bottom-actions")
-.classList.add("hidden")
-
-document
-.getElementById("summaryCard")
-.classList.remove("hidden")
-
-renderReceipts()
+document.getElementById("extraText").innerText =
+`€${extraPerPerson.toFixed(2)} da pagare a testa`
 
 }
 
