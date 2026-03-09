@@ -1,11 +1,13 @@
 let products = []
 
-let scanner
-let scannerRunning = false
-let lastBarcode = null
+let receiptA = []
+let receiptB = []
 
 const TICKET_VALUE = 8
 
+let scanner
+let scannerRunning = false
+let lastBarcode = null
 
 
 async function fetchProductName(barcode){
@@ -29,23 +31,27 @@ return ""
 
 
 
-function updateShoppingList(){
+function renderProductList(){
 
-let list = document.getElementById("shoppingList")
-
-list.innerHTML = ""
+let container = document.getElementById("productList")
+container.innerHTML=""
 
 products.forEach(p=>{
 
-let li = document.createElement("li")
-li.innerText = `${p.name} - €${p.price}`
+let row = document.createElement("div")
+row.className="product-row"
 
-list.appendChild(li)
+row.innerHTML = `
+<span>${p.name}</span>
+<span>€${p.price.toFixed(2)}</span>
+`
+
+container.appendChild(row)
 
 })
 
-if(products.length > 0){
-document.getElementById("splitButton").classList.remove("hidden")
+if(products.length>0){
+document.getElementById("splitBtn").classList.remove("hidden")
 }
 
 }
@@ -54,141 +60,84 @@ document.getElementById("splitButton").classList.remove("hidden")
 
 function splitShopping(){
 
-let n = products.length
+receiptA=[]
+receiptB=[]
 
-let bestA = []
-let bestB = []
+let sumA=0
+let sumB=0
 
-let bestTickets = -1
-let bestBalance = Infinity
-let bestExtra = Infinity
+products.forEach(p=>{
 
-for(let mask = 0; mask < (1 << n); mask++){
+if(sumA<=sumB){
 
-let A = []
-let B = []
-
-let sumA = 0
-let sumB = 0
-
-for(let i = 0; i < n; i++){
-
-if(mask & (1 << i)){
-
-A.push(products[i])
-sumA += products[i].price
+receiptA.push(p)
+sumA+=p.price
 
 }else{
 
-B.push(products[i])
-sumB += products[i].price
+receiptB.push(p)
+sumB+=p.price
 
 }
-
-}
-
-/* evita scontrini vuoti se ci sono più prodotti */
-
-if(n > 1 && (A.length === 0 || B.length === 0)){
-continue
-}
-
-let ticketA = Math.floor(sumA / TICKET_VALUE)
-let ticketB = Math.floor(sumB / TICKET_VALUE)
-
-let extraA = sumA - ticketA * TICKET_VALUE
-let extraB = sumB - ticketB * TICKET_VALUE
-
-let totalTickets = ticketA + ticketB
-let balance = Math.abs(sumA - sumB)
-let totalExtra = extraA + extraB
-
-
-if(
-totalTickets > bestTickets ||
-(
-totalTickets === bestTickets &&
-(
-balance < bestBalance ||
-(balance === bestBalance && totalExtra < bestExtra)
-)
-)
-){
-
-bestTickets = totalTickets
-bestBalance = balance
-bestExtra = totalExtra
-
-bestA = A
-bestB = B
-
-}
-
-}
-
-let sumA = bestA.reduce((s,p)=>s+p.price,0)
-let sumB = bestB.reduce((s,p)=>s+p.price,0)
-
-renderReceipts(bestA,bestB,sumA,sumB)
-
-document.getElementById("shoppingSection").classList.add("hidden")
-document.getElementById("receipts").classList.remove("hidden")
-
-document.getElementById("receipts").scrollIntoView({
-behavior:"smooth"
-})
-
-}
-
-
-
-function renderReceipts(A,B,sumA,sumB){
-
-let listA = document.getElementById("receiptA")
-let listB = document.getElementById("receiptB")
-
-listA.innerHTML = ""
-listB.innerHTML = ""
-
-
-A.forEach(p=>{
-
-let li = document.createElement("li")
-li.innerText = `${p.name} - €${p.price}`
-
-listA.appendChild(li)
 
 })
 
+renderReceipts()
 
-B.forEach(p=>{
+document.getElementById("tabs").classList.remove("hidden")
+document.getElementById("summaryCard").classList.remove("hidden")
+document.getElementById("productList").classList.add("hidden")
 
-let li = document.createElement("li")
-li.innerText = `${p.name} - €${p.price}`
-
-listB.appendChild(li)
-
-})
+}
 
 
-let ticketsA = Math.floor(sumA / TICKET_VALUE)
-let ticketsB = Math.floor(sumB / TICKET_VALUE)
 
-let extraA = sumA - ticketsA * TICKET_VALUE
-let extraB = sumB - ticketsB * TICKET_VALUE
+function renderReceipts(){
 
+let list=document.getElementById("receiptList")
+list.innerHTML=""
+list.classList.remove("hidden")
 
-document.getElementById("summaryA").innerHTML = `
-Totale: €${sumA.toFixed(2)}<br>
-Ticket utilizzabili: ${ticketsA}<br>
-Da pagare fuori ticket: €${extraA.toFixed(2)}
+let active="A"
+
+if(document.getElementById("tabB").classList.contains("active")){
+active="B"
+}
+
+let receipt=active==="A"?receiptA:receiptB
+
+receipt.forEach(p=>{
+
+let row=document.createElement("div")
+row.className="product-row"
+
+row.innerHTML=`
+<span>${p.name}</span>
+<span>€${p.price.toFixed(2)}</span>
 `
 
-document.getElementById("summaryB").innerHTML = `
-Totale: €${sumB.toFixed(2)}<br>
-Ticket utilizzabili: ${ticketsB}<br>
-Da pagare fuori ticket: €${extraB.toFixed(2)}
-`
+list.appendChild(row)
+
+})
+
+updateSummary()
+
+}
+
+
+
+function updateSummary(){
+
+let sum=products.reduce((s,p)=>s+p.price,0)
+
+let tickets=Math.floor(sum/TICKET_VALUE)
+let extra=sum-tickets*TICKET_VALUE
+
+document.getElementById("ticketSummary").innerText=
+`€${sum.toFixed(2)} · ${tickets} ticket`
+
+document.getElementById("extraText").innerText=
+`€${extra.toFixed(2)} da pagare tramite carta`
 
 }
 
@@ -206,22 +155,21 @@ document.getElementById("priceSheet").classList.remove("active")
 
 async function startScanner(){
 
+document.getElementById("reader").classList.remove("hidden")
+
 if(!scanner){
-scanner = new Html5Qrcode("reader")
+scanner=new Html5Qrcode("reader")
 }
 
 if(scannerRunning) return
 
 await scanner.start(
-{ facingMode: "environment" },
-{
-fps:10,
-qrbox:250
-},
+{facingMode:"environment"},
+{fps:10,qrbox:250},
 onScanSuccess
 )
 
-scannerRunning = true
+scannerRunning=true
 
 }
 
@@ -232,8 +180,9 @@ async function stopScanner(){
 if(scanner && scannerRunning){
 
 await scanner.stop()
+scannerRunning=false
 
-scannerRunning = false
+document.getElementById("reader").classList.add("hidden")
 
 }
 
@@ -243,13 +192,13 @@ scannerRunning = false
 
 async function onScanSuccess(decodedText){
 
-lastBarcode = decodedText
+lastBarcode=decodedText
 
 await stopScanner()
 
-let name = await fetchProductName(decodedText)
+let name=await fetchProductName(decodedText)
 
-document.getElementById("productNameInput").value = name
+document.getElementById("productNameInput").value=name
 
 openSheet()
 
@@ -257,10 +206,10 @@ openSheet()
 
 
 
-document.getElementById("savePrice").onclick = () => {
+document.getElementById("savePrice").onclick=()=>{
 
-let name = document.getElementById("productNameInput").value || "Prodotto"
-let price = parseFloat(document.getElementById("priceInput").value)
+let name=document.getElementById("productNameInput").value||"Prodotto"
+let price=parseFloat(document.getElementById("priceInput").value)
 
 if(!price) return
 
@@ -270,17 +219,17 @@ name:name,
 price:price
 })
 
-document.getElementById("priceInput").value = ""
+document.getElementById("priceInput").value=""
 
 closeSheet()
 
-updateShoppingList()
+renderProductList()
 
 }
 
 
 
-document.getElementById("cancelPrice").onclick = () => {
+document.getElementById("cancelPrice").onclick=()=>{
 
 closeSheet()
 
@@ -288,7 +237,7 @@ closeSheet()
 
 
 
-document.getElementById("startScan").onclick = () => {
+document.getElementById("scanBtn").onclick=()=>{
 
 startScanner()
 
@@ -296,8 +245,30 @@ startScanner()
 
 
 
-document.getElementById("splitButton").onclick = () => {
+document.getElementById("splitBtn").onclick=()=>{
 
 splitShopping()
+
+}
+
+
+
+document.getElementById("tabA").onclick=()=>{
+
+document.getElementById("tabA").classList.add("active")
+document.getElementById("tabB").classList.remove("active")
+
+renderReceipts()
+
+}
+
+
+
+document.getElementById("tabB").onclick=()=>{
+
+document.getElementById("tabB").classList.add("active")
+document.getElementById("tabA").classList.remove("active")
+
+renderReceipts()
 
 }
