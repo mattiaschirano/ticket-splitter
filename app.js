@@ -119,6 +119,18 @@ if(decodedText === lastBarcode) return
 
 lastBarcode = decodedText
 
+/* chiude la camera */
+
+if(scannerRunning){
+await scanner.stop()
+scannerRunning = false
+}
+
+document
+.getElementById("cameraContainer")
+.classList.add("hidden")
+
+
 const name = await fetchProductName(decodedText)
 
 const priceCache = getPriceCache()
@@ -135,7 +147,9 @@ document.getElementById("priceInput").value = ""
 quantity = 1
 updateQuantityUI()
 
-document.getElementById("priceSheet").classList.add("active")
+document
+.getElementById("priceSheet")
+.classList.add("active")
 
 }
 
