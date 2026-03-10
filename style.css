@@ -31,12 +31,36 @@ color:#6b7280;
 margin-top:20px;
 }
 
+.swipe-row{
+position:relative;
+overflow:hidden;
+border-bottom:1px solid #eee;
+}
+
 .product-row{
 display:flex;
 justify-content:space-between;
 padding:14px 0;
-border-bottom:1px solid #eee;
 font-size:16px;
+background:white;
+position:relative;
+transition:transform 0.25s ease;
+padding-left:4px;
+padding-right:4px;
+}
+
+.delete-action{
+position:absolute;
+right:0;
+top:0;
+bottom:0;
+width:80px;
+background:#c1121f;
+display:flex;
+align-items:center;
+justify-content:center;
+color:white;
+font-size:22px;
 }
 
 
@@ -184,7 +208,7 @@ text-align:center;
 }
 
 
-/* SCANNER SHEET */
+/* SCANNER */
 
 .scanner-sheet{
 position:fixed;
@@ -228,7 +252,6 @@ border-radius:50%;
 border:none;
 background:white;
 font-size:18px;
-color:black;
 display:flex;
 align-items:center;
 justify-content:center;

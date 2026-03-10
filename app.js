@@ -103,7 +103,7 @@ if(scannerRunning) return
 
 await scanner.start(
 { facingMode:"environment" },
-{ fps:10, qrbox:250 },
+{ fps:10, qrbox:350 },
 onScanSuccess
 )
 
@@ -224,6 +224,9 @@ list.innerHTML = ""
 
 products.forEach((p,index)=>{
 
+const wrapper = document.createElement("div")
+wrapper.className = "swipe-row"
+
 const row = document.createElement("div")
 row.className = "product-row"
 
@@ -231,6 +234,19 @@ row.innerHTML = `
 <span>${p.name} x${p.quantity}</span>
 <span>€${(p.price*p.quantity).toFixed(2)}</span>
 `
+
+const deleteBtn = document.createElement("div")
+deleteBtn.className = "delete-action"
+deleteBtn.innerHTML = "🗑️"
+
+wrapper.appendChild(deleteBtn)
+wrapper.appendChild(row)
+
+list.appendChild(wrapper)
+
+
+
+/* EDIT */
 
 row.addEventListener("click",()=>{
 
@@ -247,6 +263,21 @@ document.getElementById("priceSheet").classList.add("active")
 
 })
 
+
+
+/* DELETE CLICK */
+
+deleteBtn.addEventListener("click",()=>{
+
+products.splice(index,1)
+renderProducts()
+
+})
+
+
+
+/* SWIPE */
+
 let startX = 0
 
 row.addEventListener("touchstart",(e)=>{
@@ -256,15 +287,15 @@ startX = e.touches[0].clientX
 row.addEventListener("touchend",(e)=>{
 
 let endX = e.changedTouches[0].clientX
+let diff = startX - endX
 
-if(startX - endX > 80){
-products.splice(index,1)
-renderProducts()
+if(diff > 60){
+row.style.transform = "translateX(-80px)"
+}else{
+row.style.transform = "translateX(0)"
 }
 
 })
-
-list.appendChild(row)
 
 })
 
