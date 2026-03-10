@@ -175,6 +175,33 @@ color:white;
 background:#e5e7eb;
 }
 
+
+/* QUANTITY */
+
+.quantity-field{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:16px;
+margin-top:14px;
+}
+
+.quantity-field button{
+width:36px;
+height:36px;
+border:none;
+border-radius:8px;
+background:#111827;
+color:white;
+font-size:18px;
+}
+
+.quantity-field span{
+font-size:18px;
+min-width:24px;
+text-align:center;
+}
+
 .hidden{
 display:none;
 }

@@ -6,26 +6,37 @@ let products = []
 let receiptA = []
 let receiptB = []
 
+let editingIndex = null
+let quantity = 1
+
 const TICKET_VALUE = 8
 
 
 
-/* CACHE */
+/* CACHE NOMI */
 
 function getCache(){
-
 let cache = localStorage.getItem("productCache")
-
 if(!cache) return {}
-
 return JSON.parse(cache)
-
 }
 
 function saveCache(cache){
-
 localStorage.setItem("productCache", JSON.stringify(cache))
+}
 
+
+
+/* CACHE PREZZI */
+
+function getPriceCache(){
+let cache = localStorage.getItem("priceCache")
+if(!cache) return {}
+return JSON.parse(cache)
+}
+
+function savePriceCache(cache){
+localStorage.setItem("priceCache", JSON.stringify(cache))
 }
 
 
@@ -60,14 +71,11 @@ p.brands ||
 ""
 
 if(name){
-
 cache[barcode] = name
 saveCache(cache)
-
 }
 
 return name
-
 }
 
 }catch(e){
@@ -75,7 +83,6 @@ console.log(e)
 }
 
 return ""
-
 }
 
 
@@ -84,9 +91,7 @@ return ""
 
 async function startScanner(){
 
-document
-.getElementById("cameraContainer")
-.classList.remove("hidden")
+document.getElementById("cameraContainer").classList.remove("hidden")
 
 if(!scanner){
 scanner = new Html5Qrcode("reader")
@@ -106,40 +111,40 @@ scannerRunning = true
 
 
 
-async function stopScanner(){
-
-if(scanner && scannerRunning){
-
-await scanner.stop()
-scannerRunning = false
-
-}
-
-document
-.getElementById("cameraContainer")
-.classList.add("hidden")
-
-}
-
-
-
 /* SCAN SUCCESS */
 
 async function onScanSuccess(decodedText){
 
-lastBarcode = decodedText
+if(decodedText === lastBarcode) return
 
-await stopScanner()
+lastBarcode = decodedText
 
 const name = await fetchProductName(decodedText)
 
+const priceCache = getPriceCache()
+const cachedPrice = priceCache[decodedText]
+
 document.getElementById("productNameInput").value = name
+
+if(cachedPrice){
+document.getElementById("priceInput").value = cachedPrice
+}else{
 document.getElementById("priceInput").value = ""
+}
 
-document
-.getElementById("priceSheet")
-.classList.add("active")
+quantity = 1
+updateQuantityUI()
 
+document.getElementById("priceSheet").classList.add("active")
+
+}
+
+
+
+/* QUANTITY */
+
+function updateQuantityUI(){
+document.getElementById("qtyValue").innerText = quantity
 }
 
 
@@ -156,17 +161,32 @@ parseFloat(document.getElementById("priceInput").value)
 
 if(!price) return
 
-products.push({
+const product = {
 barcode:lastBarcode,
 name:name,
-price:price
-})
+price:price,
+quantity:quantity
+}
 
-document
-.getElementById("priceSheet")
-.classList.remove("active")
+if(editingIndex !== null){
+products[editingIndex] = product
+editingIndex = null
+}else{
+products.push(product)
+}
+
+let priceCache = getPriceCache()
+priceCache[lastBarcode] = price
+savePriceCache(priceCache)
+
+document.getElementById("priceSheet").classList.remove("active")
+
+quantity = 1
+updateQuantityUI()
 
 renderProducts()
+
+lastBarcode = null
 
 }
 
@@ -177,19 +197,49 @@ renderProducts()
 function renderProducts(){
 
 const list = document.getElementById("productList")
-
 list.innerHTML = ""
 
-products.forEach(p=>{
+products.forEach((p,index)=>{
 
 const row = document.createElement("div")
-
 row.className = "product-row"
 
 row.innerHTML = `
-<span>${p.name}</span>
-<span>€${p.price.toFixed(2)}</span>
+<span>${p.name} x${p.quantity}</span>
+<span>€${(p.price*p.quantity).toFixed(2)}</span>
 `
+
+row.addEventListener("click",()=>{
+
+editingIndex = index
+lastBarcode = p.barcode
+
+document.getElementById("productNameInput").value = p.name
+document.getElementById("priceInput").value = p.price
+
+quantity = p.quantity
+updateQuantityUI()
+
+document.getElementById("priceSheet").classList.add("active")
+
+})
+
+let startX = 0
+
+row.addEventListener("touchstart",(e)=>{
+startX = e.touches[0].clientX
+})
+
+row.addEventListener("touchend",(e)=>{
+
+let endX = e.changedTouches[0].clientX
+
+if(startX - endX > 80){
+products.splice(index,1)
+renderProducts()
+}
+
+})
 
 list.appendChild(row)
 
@@ -203,7 +253,7 @@ document.getElementById("splitBtn").classList.remove("hidden")
 
 
 
-/* ALGORITMO DI SPLIT OTTIMIZZATO */
+/* SPLIT */
 
 function splitShopping(){
 
@@ -221,10 +271,12 @@ let sumB = 0
 
 for(let i=0;i<n;i++){
 
+let value = products[i].price * products[i].quantity
+
 if(mask & (1<<i)){
-sumA += products[i].price
+sumA += value
 }else{
-sumB += products[i].price
+sumB += value
 }
 
 }
@@ -248,8 +300,6 @@ bestMask = mask
 
 }
 
-/* costruzione scontrini */
-
 receiptA = []
 receiptB = []
 
@@ -262,8 +312,6 @@ receiptB.push(products[i])
 }
 
 }
-
-/* UI */
 
 document.getElementById("productList").classList.add("hidden")
 document.getElementById("tabs").classList.remove("hidden")
@@ -278,17 +326,15 @@ renderReceipts()
 
 
 
-/* RENDER RECEIPTS */
+/* RECEIPTS */
 
 function renderReceipts(){
 
 const list = document.getElementById("receiptList")
-
 list.innerHTML = ""
 
 let activeA =
-document.getElementById("tabA")
-.classList.contains("active")
+document.getElementById("tabA").classList.contains("active")
 
 let receipt = activeA ? receiptA : receiptB
 
@@ -299,8 +345,8 @@ const row = document.createElement("div")
 row.className = "product-row"
 
 row.innerHTML = `
-<span>${p.name}</span>
-<span>€${p.price.toFixed(2)}</span>
+<span>${p.name} x${p.quantity}</span>
+<span>€${(p.price*p.quantity).toFixed(2)}</span>
 `
 
 list.appendChild(row)
@@ -318,7 +364,7 @@ updateSummary()
 function updateSummary(){
 
 let total =
-products.reduce((sum,p)=>sum+p.price,0)
+products.reduce((sum,p)=>sum+(p.price*p.quantity),0)
 
 let totalTickets =
 Math.floor(total / TICKET_VALUE)
@@ -334,10 +380,10 @@ extra / 2
 
 
 let totalA =
-receiptA.reduce((sum,p)=>sum+p.price,0)
+receiptA.reduce((sum,p)=>sum+(p.price*p.quantity),0)
 
 let totalB =
-receiptB.reduce((sum,p)=>sum+p.price,0)
+receiptB.reduce((sum,p)=>sum+(p.price*p.quantity),0)
 
 
 let ticketsA =
@@ -348,13 +394,10 @@ Math.floor(totalB / TICKET_VALUE)
 
 
 let activeA =
-document.getElementById("tabA")
-.classList.contains("active")
-
+document.getElementById("tabA").classList.contains("active")
 
 let tickets =
 activeA ? ticketsA : ticketsB
-
 
 document.getElementById("ticketSummary").innerText =
 `Usa ${tickets} ticket`
@@ -370,30 +413,37 @@ document.getElementById("extraText").innerText =
 
 document.addEventListener("DOMContentLoaded",()=>{
 
-document
-.getElementById("scanBtn")
+document.getElementById("scanBtn")
 .addEventListener("click",startScanner)
 
-document
-.getElementById("savePrice")
+document.getElementById("savePrice")
 .addEventListener("click",saveProduct)
 
-document
-.getElementById("splitBtn")
+document.getElementById("splitBtn")
 .addEventListener("click",splitShopping)
 
-document
-.getElementById("cancelPrice")
+document.getElementById("cancelPrice")
 .addEventListener("click",()=>{
 
-document
-.getElementById("priceSheet")
-.classList.remove("active")
+document.getElementById("priceSheet").classList.remove("active")
 
 })
 
-document
-.getElementById("tabA")
+document.getElementById("qtyPlus")
+.addEventListener("click",()=>{
+quantity++
+updateQuantityUI()
+})
+
+document.getElementById("qtyMinus")
+.addEventListener("click",()=>{
+if(quantity>1){
+quantity--
+updateQuantityUI()
+}
+})
+
+document.getElementById("tabA")
 .addEventListener("click",()=>{
 
 document.getElementById("tabA").classList.add("active")
@@ -403,8 +453,7 @@ renderReceipts()
 
 })
 
-document
-.getElementById("tabB")
+document.getElementById("tabB")
 .addEventListener("click",()=>{
 
 document.getElementById("tabB").classList.add("active")
