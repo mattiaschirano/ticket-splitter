@@ -91,7 +91,9 @@ return ""
 
 async function startScanner(){
 
-document.getElementById("cameraContainer").classList.remove("hidden")
+document
+.getElementById("scannerSheet")
+.classList.remove("hidden")
 
 if(!scanner){
 scanner = new Html5Qrcode("reader")
@@ -111,6 +113,21 @@ scannerRunning = true
 
 
 
+async function stopScanner(){
+
+if(scanner && scannerRunning){
+await scanner.stop()
+scannerRunning = false
+}
+
+document
+.getElementById("scannerSheet")
+.classList.add("hidden")
+
+}
+
+
+
 /* SCAN SUCCESS */
 
 async function onScanSuccess(decodedText){
@@ -119,17 +136,7 @@ if(decodedText === lastBarcode) return
 
 lastBarcode = decodedText
 
-/* chiude la camera */
-
-if(scannerRunning){
-await scanner.stop()
-scannerRunning = false
-}
-
-document
-.getElementById("cameraContainer")
-.classList.add("hidden")
-
+await stopScanner()
 
 const name = await fetchProductName(decodedText)
 
@@ -193,7 +200,9 @@ let priceCache = getPriceCache()
 priceCache[lastBarcode] = price
 savePriceCache(priceCache)
 
-document.getElementById("priceSheet").classList.remove("active")
+document
+.getElementById("priceSheet")
+.classList.remove("active")
 
 quantity = 1
 updateQuantityUI()
@@ -427,29 +436,37 @@ document.getElementById("extraText").innerText =
 
 document.addEventListener("DOMContentLoaded",()=>{
 
-document.getElementById("scanBtn")
+document
+.getElementById("scanBtn")
 .addEventListener("click",startScanner)
 
-document.getElementById("savePrice")
+document
+.getElementById("closeScanner")
+.addEventListener("click",stopScanner)
+
+document
+.getElementById("savePrice")
 .addEventListener("click",saveProduct)
 
-document.getElementById("splitBtn")
+document
+.getElementById("splitBtn")
 .addEventListener("click",splitShopping)
 
-document.getElementById("cancelPrice")
+document
+.getElementById("cancelPrice")
 .addEventListener("click",()=>{
-
 document.getElementById("priceSheet").classList.remove("active")
-
 })
 
-document.getElementById("qtyPlus")
+document
+.getElementById("qtyPlus")
 .addEventListener("click",()=>{
 quantity++
 updateQuantityUI()
 })
 
-document.getElementById("qtyMinus")
+document
+.getElementById("qtyMinus")
 .addEventListener("click",()=>{
 if(quantity>1){
 quantity--
@@ -457,24 +474,20 @@ updateQuantityUI()
 }
 })
 
-document.getElementById("tabA")
+document
+.getElementById("tabA")
 .addEventListener("click",()=>{
-
 document.getElementById("tabA").classList.add("active")
 document.getElementById("tabB").classList.remove("active")
-
 renderReceipts()
-
 })
 
-document.getElementById("tabB")
+document
+.getElementById("tabB")
 .addEventListener("click",()=>{
-
 document.getElementById("tabB").classList.add("active")
 document.getElementById("tabA").classList.remove("active")
-
 renderReceipts()
-
 })
 
 })
