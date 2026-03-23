@@ -91,16 +91,31 @@ return ""
 
 async function startScanner(){
 
+// safety: libreria non caricata
+if (typeof Html5Qrcode === "undefined") {
+alert("Scanner non disponibile. Ricarica la pagina.")
+return
+}
+
+// evita doppio start
+if(scannerRunning) return
+
 document
 .getElementById("scannerSheet")
 .classList.remove("hidden")
 
+try{
+
+// init scanner se non esiste
 if(!scanner){
 scanner = new Html5Qrcode("reader")
 }
 
-if(scannerRunning) return
+// reset eventuale stato sporco
+await scanner.stop().catch(()=>{})
+await scanner.clear().catch(()=>{})
 
+// start
 await scanner.start(
 { facingMode:"environment" },
 { fps:10, qrbox:350 },
@@ -109,16 +124,33 @@ onScanSuccess
 
 scannerRunning = true
 
+}catch(err){
+
+console.error("Errore avvio scanner:", err)
+alert("Impossibile avviare la fotocamera")
+
+stopScanner()
+
+}
+
 }
 
 
 
 async function stopScanner(){
 
+try{
+
 if(scanner && scannerRunning){
 await scanner.stop()
-scannerRunning = false
+await scanner.clear().catch(()=>{})
 }
+
+}catch(err){
+console.warn("Errore stop scanner:", err)
+}
+
+scannerRunning = false
 
 document
 .getElementById("scannerSheet")
@@ -127,10 +159,13 @@ document
 }
 
 
-
 /* SCAN SUCCESS */
 
 async function onScanSuccess(decodedText){
+
+console.log("Barcode letto:", decodedText)
+
+if(decodedText === lastBarcode) return
 
 if(decodedText === lastBarcode) return
 
