@@ -23,14 +23,35 @@ if(!scanner){
 scanner = new Html5Qrcode("reader")
 }
 
-await scanner.stop().catch(()=>{})
-await scanner.clear().catch(()=>{})
+// ❌ NON fare stop se non è attivo
+
+// prova camera posteriore
+try{
 
 await scanner.start(
-{ facingMode:"environment" },
-{ fps:10, qrbox:350 },
+{ facingMode: "environment" },
+{ fps: 10, qrbox: 350 },
 onScanSuccess
 )
+
+} catch (e){
+
+console.warn("Fallback camera:", e)
+
+// fallback su qualsiasi camera
+const devices = await Html5Qrcode.getCameras()
+
+if(devices && devices.length){
+await scanner.start(
+devices[0].id,
+{ fps: 10, qrbox: 350 },
+onScanSuccess
+)
+} else {
+throw new Error("Nessuna camera trovata")
+}
+
+}
 
 scannerRunning = true
 
